@@ -2,6 +2,8 @@
 
 Agent-driven **SDLC maturity assessment** using [Dan Shapiro's Five-Level Framework](framework/shapiro-levels.md) for AI-assisted software development.
 
+**CI:** see [`.github/workflows/ci.yml`](.github/workflows/ci.yml) — runs `pre_merge_check.sh` on every push and PR.
+
 Point the agent at a project (repo, agent setup, pipeline, issue tracker) and it collects evidence, scores dimensions, and produces a structured maturity report — instead of ad-hoc "we're probably Level 4" guesses.
 
 ## One project = one folder · one engagement = one assessment

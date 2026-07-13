@@ -178,4 +178,11 @@ else
   fail "check_engine_agnostic.sh"
 fi
 
+chmod +x tests/test_negative_gates.sh
+if bash tests/test_negative_gates.sh >/dev/null 2>&1; then
+  ok "test_negative_gates.sh"
+else
+  fail "test_negative_gates.sh"
+fi
+
 [[ $NO -eq 0 ]]
