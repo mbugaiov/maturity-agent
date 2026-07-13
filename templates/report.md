@@ -11,9 +11,38 @@
 
 **Headline level:**  
 
+**Operational level (score.json):**  
+**Floor level (strict gaps):**  
+
 **Rationale:**  
 
 **Trend vs prior:** stable | improved | regressed | first assessment
+
+---
+
+## Reconciliation
+
+> Required when `operational_level` ≠ `floor_level`, or when `prior_headline` exists in intake/evidence.
+
+| Source | Claim | Evidence | Match? |
+|--------|-------|----------|--------|
+| score.json operational | | | |
+| score.json floor | | | |
+| Prior slide / report | | | |
+
+**Delta explanation:**  
+
+---
+
+## Factory program (shipped backlog)
+
+> Fill when `factory_manifest` or factory ticket program exists.
+
+| Ticket | Owner | Status | Citation |
+|--------|-------|--------|----------|
+| | dev / qa | Done / deferred | run log or MANIFEST |
+
+**Program summary:** Done / deferred / total
 
 ---
 
@@ -48,7 +77,9 @@
 | portability | | | |
 
 **Floor level (min dimension):**  
-**Weighted level (score.json):**
+**Operational level (factory-critical min):**  
+**Weighted level (score.json):**  
+**Headline rule matched:**  
 
 ---
 
@@ -91,4 +122,4 @@
 
 - Full evidence: `evidence.yaml`
 - Machine scores: `score.json`
-- Rubric version: `framework/rubric.yaml` v1.0
+- Rubric version: `framework/rubric.yaml` v1.1

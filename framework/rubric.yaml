@@ -1,20 +1,30 @@
 # Dan Shapiro maturity rubric — machine-readable
-# Version: 1.0
+# Version: 1.1
 # Authority: framework/shapiro-levels.md
 #
 # Scoring model:
 #   Each dimension has signals tagged with minimum_level (0-5).
 #   evidence.yaml answers: yes | partial | no | na
-#   Dimension level = highest L where ALL mandatory signals for that L are yes (partial counts as half)
-#   Overall = min(dimension levels) for "floor" report OR weighted headline (agent explains in report)
+#   Dimension level = highest L where ALL mandatory signals for that L are yes (partial fails mandatory)
+#   Optional signals at a level inform ratio but do not block higher mandatory levels
+#   Post-adjustments: factory_loop may boost when armed loop + tick_gate (see scoring_adjustments)
+#   floor_level = min(all dimension levels) — shows strict gaps
+#   operational_level = min(factory-critical dimensions) — routine STG factory truth
+#   headline_hint = level_headline_rules (first match) else operational fallback
 
-version: "1.0"
+version: "1.1"
 framework: dan-shapiro
 sub_levels:
   l5-prime:
     id: L5′
     label: "L5 on STG"
     description: "Full factory on non-PROD; humans gate PROD and policy exceptions"
+
+scoring_adjustments:
+  factory_loop:
+    # partial scheduled_ticks + tick_gate yes → operational L5′ even if strict L5 signal fails
+    partial_with_tick_gate_min_level: 4
+    backlog_complete_with_tick_gate_min_level: 4
 
 dimensions:
   - id: intent_spec
@@ -74,7 +84,7 @@ dimensions:
       - id: auto_merge
         min_level: 5
         mandatory: false
-        prompt: "Agent squash-merges when CI + review gates are green"
+        prompt: "Agent squash-merges when CI + review gates are green (check product CI YAML)"
 
   - id: review_gate
     name: "Code review gate"
@@ -87,7 +97,7 @@ dimensions:
       - id: blocking_review_ci
         min_level: 5
         mandatory: true
-        prompt: "Pipeline fails when review reports blocking issues"
+        prompt: "Pipeline fails when review reports blocking issues (check product CI YAML)"
 
   - id: deploy_verification
     name: "Deploy verification"
@@ -174,6 +184,10 @@ dimensions:
         min_level: 5
         mandatory: false
         prompt: "End-of-tick gate requires terminal DoD verdict per scope ticket"
+      - id: factory_backlog_complete
+        min_level: 5
+        mandatory: false
+        prompt: "Factory program backlog shipped (MANIFEST Done + run traces)"
 
   - id: portability
     name: "Portability"
@@ -193,10 +207,12 @@ dimensions:
         prompt: "Second product/repo successfully onboarded"
 
 level_headline_rules:
-  - condition: "factory_loop >= 5 AND qa_autonomy >= 5 AND dev_autonomy >= 5 AND deploy_verification >= 5 AND prod_human_gated == yes"
+  - condition: "factory_loop >= 5 AND qa_autonomy >= 5 AND dev_autonomy >= 5 AND deploy_verification >= 5 AND review_gate >= 5 AND prod_human_gated == yes"
+    headline: "L5′ (L5 on STG)"
+  - condition: "factory_loop >= 4 AND qa_autonomy >= 5 AND dev_autonomy >= 5 AND deploy_verification >= 5 AND review_gate >= 5 AND prod_human_gated == yes"
     headline: "L5′ (L5 on STG)"
   - condition: "factory_loop >= 5 AND qa_autonomy >= 5 AND dev_autonomy >= 5 AND prod_human_gated == no AND second_product_proof == yes"
     headline: "L5 (full dark factory)"
   - condition: "agent_topology >= 4 AND intent_spec >= 4"
     headline: "L4 (engineering team)"
-  - fallback: "Use floor dimension level; agent narrates reaching direction"
+  - fallback: "Use operational_level for headline; floor_level for gap narrative"

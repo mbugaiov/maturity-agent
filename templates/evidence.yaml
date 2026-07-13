@@ -1,13 +1,30 @@
 # signals:
 #   <signal_id>:
 #     answer: yes | partial | no | na
-#     citation: "file path, Jira KEY, or interview note"
+#     citation: "file path, issue KEY, or interview note"
 #     notes: ""
+#     per_repo:              # optional — for multi-repo stacks
+#       product: yes         # shipping repo (authoritative for CI merge/CR/deploy)
+#       engine: partial      # agent-tooling repo
+#
+# meta extensions (optional):
+#   factory_manifest: "path/to/MANIFEST.md"
+#   ci_product: "bitbucket-pipelines.yml"
+#   ci_engine: ".github/workflows/ci.yml"
+#   loop_cadence: "5m"
+#   loop_arm_method: "arm_dev_loop.sh + /loop"
+#   prior_headline: "L5′ on STG ~90%"
 
 meta:
   project: "<slug>"
   assessment: "<YYYY-MM-DD>-<scope>"
   assessor: ""
   date: ""
+  factory_manifest: ""
+  ci_product: ""
+  ci_engine: ""
+  loop_cadence: ""
+  loop_arm_method: ""
+  prior_headline: ""
 
 signals: {}

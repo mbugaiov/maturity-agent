@@ -1,0 +1,112 @@
+meta:
+  project: fixture-l5prime
+  assessment: "2026-07-13-baseline"
+  assessor: test
+  date: "2026-07-13"
+  factory_manifest: "requirements/factory-tickets/MANIFEST.md"
+  ci_product: "bitbucket-pipelines.yml"
+  ci_engine: ".github/workflows/ci.yml"
+  loop_cadence: "5m"
+  loop_arm_method: "arm_dev_loop.sh + /loop"
+  prior_headline: "L5′ on STG ~90%"
+
+signals:
+  human_writes_tickets:
+    answer: yes
+    citation: "Epic PROG-100; docs/ticket-template.md"
+  structured_acceptance:
+    answer: yes
+    citation: "openspec/scenarios"
+  agents_do_not_invent_scope:
+    answer: yes
+    citation: "rules/scope-policy.md"
+  multiple_roles:
+    answer: yes
+    citation: "AGENTS.md role table"
+  written_role_boundaries:
+    answer: yes
+    citation: "rules/agent-ownership.md"
+  cr_does_not_pick_tickets:
+    answer: yes
+    citation: "rules/cr-agent.md"
+  agent_opens_pr:
+    answer: yes
+    citation: "factory/dev skill"
+  openspec_before_code:
+    answer: yes
+    citation: "openspec validate gate"
+  machine_dev_handoff:
+    answer: yes
+    citation: "docs/dev-definition-of-done.md"
+  auto_merge:
+    answer: partial
+    per_repo:
+      product: yes
+      engine: no
+    citation: "product: bitbucket-pipelines.yml auto_merge_pr.sh; engine: human merge in rules"
+  review_agent_exists:
+    answer: yes
+    citation: "skills/code-review"
+  blocking_review_ci:
+    answer: partial
+    per_repo:
+      product: yes
+      engine: partial
+    citation: "product: bitbucket-pipelines.yml check_review_gate.sh"
+  auto_deploy_nonprod:
+    answer: yes
+    per_repo:
+      product: yes
+      engine: yes
+    citation: "deploy STG on merge"
+  buildid_gate:
+    answer: yes
+    per_repo:
+      product: yes
+      engine: yes
+    citation: "scripts/check_buildid_gate.sh"
+  qa_agent_or_unattended_tests:
+    answer: yes
+    citation: "factory/qa skill"
+  two_pass_or_equivalent:
+    answer: yes
+    citation: "qa two-pass rule"
+  auto_accept_done:
+    answer: yes
+    citation: "docs/qa-definition-of-done.md"
+  auto_file_confirmed_bugs:
+    answer: yes
+    citation: "scripts/auto_file_bug.sh"
+  regression_reopen:
+    answer: yes
+    citation: "scripts/reopen_regression.sh"
+  jira_handoff_comments:
+    answer: yes
+    citation: "scripts/post_handoff.sh"
+  factory_ledger:
+    answer: yes
+    citation: "factory/runs/PROG-200.jsonl"
+  humans_own_intent:
+    answer: yes
+    citation: "needs-human doc"
+  needs_human_policy:
+    answer: yes
+    citation: "docs/human-exceptions.md"
+  prod_human_gated:
+    answer: yes
+    citation: "PROD deploy ticket required"
+  scheduled_ticks:
+    answer: partial
+    citation: "arm_dev_loop.sh; /loop 300; project-memory cadence 5m"
+  tick_gate:
+    answer: yes
+    citation: "scripts/check_tick_gate.sh"
+  factory_backlog_complete:
+    answer: partial
+    citation: "MANIFEST: 11 Done + 1 deferred"
+  project_template:
+    answer: yes
+    citation: "projects/_template"
+  slug_parameterized_scripts:
+    answer: yes
+    citation: "new_project.sh"

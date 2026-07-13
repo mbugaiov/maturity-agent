@@ -43,6 +43,13 @@ scripts/new_assessment.sh <slug> "<scope>"
    python3 scripts/score_assessment.py projects/acme/assessments/<date>-baseline
    ```
 
+   `score.json` (rubric v1.1) exposes:
+   - **`headline_hint`** — use in `report.md` (from `level_headline_rules`)
+   - **`operational_level`** — factory truth on STG
+   - **`floor_level`** — strict min for gap narrative only
+
+   Helper scripts for discovery: `scripts/collect_ci_signals.sh <repo>`, `scripts/verify_factory_manifest.sh <MANIFEST.md>`.
+
 6. **Build presentation** (after report):
 
    ```bash

@@ -45,6 +45,49 @@ class TestAnswerWeight(unittest.TestCase):
         self.assertEqual(score.answer_weight(True), 1.0)
 
 
+class TestEffectiveSignalAnswer(unittest.TestCase):
+    def test_per_repo_product_wins_for_blocking_review(self):
+        entry = {
+            "answer": "no",
+            "per_repo": {"product": "yes", "engine": "no"},
+        }
+        self.assertEqual(
+            score.effective_signal_answer(entry, "blocking_review_ci"),
+            "yes",
+        )
+
+    def test_per_repo_product_wins_for_auto_merge(self):
+        entry = {
+            "answer": "no",
+            "per_repo": {"product": "yes", "engine": "no"},
+        }
+        self.assertEqual(score.effective_signal_answer(entry, "auto_merge"), "yes")
+
+    def test_per_repo_ci_without_product_falls_back_to_top_level(self):
+        entry = {
+            "answer": "no",
+            "per_repo": {"engine": "yes"},
+        }
+        self.assertEqual(
+            score.effective_signal_answer(entry, "blocking_review_ci"),
+            "no",
+        )
+
+    def test_per_repo_na_does_not_upgrade_to_yes(self):
+        entry = {
+            "answer": "no",
+            "per_repo": {"product": "no", "engine": "na"},
+        }
+        self.assertEqual(
+            score.effective_signal_answer(entry, "blocking_review_ci"),
+            "no",
+        )
+
+    def test_per_repo_any_yes_for_non_ci_signal(self):
+        entry = {"answer": "no", "per_repo": {"a": "partial", "b": "yes"}}
+        self.assertEqual(score.effective_signal_answer(entry, "other_signal"), "yes")
+
+
 class TestDimensionLevel(unittest.TestCase):
     def test_all_yes_achieves_level(self):
         signals = [
@@ -61,18 +104,77 @@ class TestDimensionLevel(unittest.TestCase):
         result = score.dimension_level(signals, evidence)
         self.assertEqual(result["level"], 0)
 
+    def test_optional_only_level_does_not_block_higher_mandatory(self):
+        """dev_autonomy L4 is optional-only; L5 mandatory must still be evaluated."""
+        signals = [
+            {"id": "openspec_before_code", "min_level": 4, "mandatory": False},
+            {"id": "machine_dev_handoff", "min_level": 5, "mandatory": True},
+        ]
+        evidence = {
+            "signals": {
+                "machine_dev_handoff": {"answer": "yes"},
+            }
+        }
+        result = score.dimension_level(signals, evidence)
+        self.assertEqual(result["level"], 5)
+
+
+class TestHeadlineRules(unittest.TestCase):
+    def test_l5_prime_rule_matches_partial_loop(self):
+        dim_levels = {
+            "factory_loop": 4,
+            "qa_autonomy": 5,
+            "dev_autonomy": 5,
+            "deploy_verification": 5,
+            "review_gate": 5,
+        }
+        evidence = {"signals": {"prod_human_gated": {"answer": "yes"}}}
+        rubric = score.load_yaml(ROOT / "framework" / "rubric.yaml")
+        headline = score.resolve_headline(rubric, dim_levels, evidence)
+        self.assertEqual(headline["headline_hint"], "L5′ (L5 on STG)")
+
+    def test_l5_prime_rule_requires_review_gate(self):
+        dim_levels = {
+            "factory_loop": 5,
+            "qa_autonomy": 5,
+            "dev_autonomy": 5,
+            "deploy_verification": 5,
+            "review_gate": 4,
+        }
+        evidence = {"signals": {"prod_human_gated": {"answer": "yes"}}}
+        rubric = score.load_yaml(ROOT / "framework" / "rubric.yaml")
+        headline = score.resolve_headline(rubric, dim_levels, evidence)
+        self.assertNotEqual(headline["headline_hint"], "L5′ (L5 on STG)")
+
+
+class TestFactoryLoopAdjustment(unittest.TestCase):
+    def test_partial_scheduled_ticks_boosts_factory_loop(self):
+        rubric = score.load_yaml(ROOT / "framework" / "rubric.yaml")
+        factory_dim = next(d for d in rubric["dimensions"] if d["id"] == "factory_loop")
+        evidence = {
+            "signals": {
+                "scheduled_ticks": {"answer": "partial"},
+                "tick_gate": {"answer": "yes"},
+            }
+        }
+        result = score.dimension_level(factory_dim["signals"], evidence)
+        self.assertEqual(result["level"], 0)
+        dims = [{"id": "factory_loop", "level": result["level"], "name": "Factory loop", "weight": 1.0, "details": result["details"]}]
+        adjusted = score.apply_dimension_adjustments(dims, evidence, rubric)
+        self.assertGreaterEqual(adjusted[0]["level"], 4)
+        self.assertTrue(adjusted[0].get("adjusted"))
+
 
 class TestScoreAssessmentIntegration(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp(prefix="maturity-score-")
         self.assess_dir = Path(self.tmp)
-        shutil.copy(FIXTURES / "l4-evidence.yaml", self.assess_dir / "evidence.yaml")
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
 
-    def test_writes_score_json_with_dimensions(self):
-        # Point script at temp dir; rubric resolved via script parent fallback.
+    def _run_score(self, fixture_name: str = "l4-evidence.yaml") -> dict:
+        shutil.copy(FIXTURES / fixture_name, self.assess_dir / "evidence.yaml")
         orig_argv = sys.argv
         try:
             sys.argv = ["score_assessment.py", str(self.assess_dir)]
@@ -80,11 +182,48 @@ class TestScoreAssessmentIntegration(unittest.TestCase):
         finally:
             sys.argv = orig_argv
         self.assertEqual(rc, 0)
-        out = json.loads((self.assess_dir / "score.json").read_text())
+        return json.loads((self.assess_dir / "score.json").read_text())
+
+    def test_writes_score_json_with_dimensions(self):
+        out = self._run_score("l4-evidence.yaml")
         self.assertIn("dimensions", out)
         self.assertGreater(len(out["dimensions"]), 0)
         self.assertIn("floor_level", out)
         self.assertIn("weighted_level", out)
+        self.assertIn("operational_level", out)
+        self.assertIn("headline_hint", out)
+        self.assertIn("headline_rule_matched", out)
+
+    def test_l5_prime_fixture_headline_not_floor(self):
+        out = self._run_score("l5-prime-evidence.yaml")
+        self.assertEqual(out["headline_hint"], "L5′ (L5 on STG)")
+        self.assertGreaterEqual(out["operational_level"], 4)
+        factory = next(d for d in out["dimensions"] if d["id"] == "factory_loop")
+        self.assertGreaterEqual(factory["level"], 4)
+        self.assertTrue(factory.get("adjusted"))
+        # operational should exceed strict floor when loop is partial
+        self.assertGreaterEqual(out["operational_level"], out["floor_level"])
+
+    def test_prose_trap_per_repo_product_wins(self):
+        out = self._run_score("prose-trap-evidence.yaml")
+        review = next(d for d in out["dimensions"] if d["id"] == "review_gate")
+        deploy = next(d for d in out["dimensions"] if d["id"] == "deploy_verification")
+        # Top-level answer=no must not override per_repo.product=yes for CI signals
+        self.assertGreaterEqual(review["level"], 5)
+        self.assertGreaterEqual(deploy["level"], 5)
+        blocking = score.signal_answer(
+            score.load_yaml(self.assess_dir / "evidence.yaml"),
+            "blocking_review_ci",
+        )
+        auto = score.signal_answer(
+            score.load_yaml(self.assess_dir / "evidence.yaml"),
+            "auto_merge",
+        )
+        self.assertEqual(blocking, "yes")
+        self.assertEqual(auto, "yes")
+        dev = next(d for d in out["dimensions"] if d["id"] == "dev_autonomy")
+        self.assertGreaterEqual(dev["level"], 5)
+        self.assertGreaterEqual(out["operational_level"], 4)
 
     def test_boolean_yaml_answers_score(self):
         shutil.copy(FIXTURES / "bool-evidence.yaml", self.assess_dir / "evidence.yaml")
@@ -98,11 +237,11 @@ class TestScoreAssessmentIntegration(unittest.TestCase):
         out = json.loads((self.assess_dir / "score.json").read_text())
         intent = next(d for d in out["dimensions"] if d["id"] == "intent_spec")
         detail = intent["details"][0]
-        # true must normalize to yes (ratio > 0); false must normalize to no
         self.assertGreater(detail["ratio"], 0)
         self.assertNotIn("human_writes_tickets", detail.get("failed_mandatory", []))
 
     def test_missing_evidence_exits_nonzero(self):
+        shutil.copy(FIXTURES / "l4-evidence.yaml", self.assess_dir / "evidence.yaml")
         (self.assess_dir / "evidence.yaml").unlink()
         orig_argv = sys.argv
         try:

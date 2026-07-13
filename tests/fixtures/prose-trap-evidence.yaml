@@ -1,0 +1,84 @@
+meta:
+  project: fixture-prose-trap
+  date: "2026-07-13"
+
+signals:
+  human_writes_tickets:
+    answer: yes
+    citation: "docs/tickets.md"
+  structured_acceptance:
+    answer: yes
+    citation: "openspec/scenarios"
+  agents_do_not_invent_scope:
+    answer: yes
+    citation: "rules/scope.md"
+  multiple_roles:
+    answer: yes
+    citation: "AGENTS.md"
+  written_role_boundaries:
+    answer: yes
+    citation: "rules/engine.md"
+  agent_opens_pr:
+    answer: yes
+    citation: "CI opens PR"
+  machine_dev_handoff:
+    answer: yes
+    citation: "docs/dev-dod.md"
+  auto_merge:
+    answer: no
+    citation: "rules/mr-pipeline.mdc says human merge"
+    per_repo:
+      product: yes
+      engine: no
+    notes: "Prose trap — product CI has auto_merge; per_repo.product must win"
+  review_agent_exists:
+    answer: yes
+    citation: "review gate"
+  blocking_review_ci:
+    answer: no
+    citation: "engine workflow optional review"
+    per_repo:
+      product: yes
+      engine: no
+  auto_deploy_nonprod:
+    answer: yes
+    citation: "deploy STG"
+  buildid_gate:
+    answer: yes
+    citation: "check_buildid_gate.sh"
+  qa_agent_or_unattended_tests:
+    answer: yes
+    citation: "qa loop"
+  auto_accept_done:
+    answer: yes
+    citation: "qa dod"
+  auto_file_confirmed_bugs:
+    answer: yes
+    citation: "auto_file_bug.sh"
+  jira_handoff_comments:
+    answer: yes
+    citation: "handoff script"
+  humans_own_intent:
+    answer: yes
+    citation: "needs-human doc"
+  needs_human_policy:
+    answer: yes
+    citation: "human-exceptions.md"
+  prod_human_gated:
+    answer: yes
+    citation: "PROD gated"
+  scheduled_ticks:
+    answer: partial
+    citation: "arm loop"
+  tick_gate:
+    answer: yes
+    citation: "tick gate script"
+  factory_backlog_complete:
+    answer: yes
+    citation: "MANIFEST all factory tickets Done"
+  project_template:
+    answer: yes
+    citation: "projects/_template"
+  slug_parameterized_scripts:
+    answer: yes
+    citation: "new_project.sh"

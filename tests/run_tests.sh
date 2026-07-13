@@ -138,7 +138,7 @@ else
   if python3 scripts/score_assessment.py "$RUN_DIR" >/dev/null 2>&1; then
     ok "score_assessment.py"
     [[ -f "$RUN_DIR/score.json" ]] && ok "score.json written" || fail "score.json written"
-    python3 -c "import json; d=json.load(open('$RUN_DIR/score.json')); assert 'dimensions' in d and len(d['dimensions'])>0"
+    python3 -c "import json; d=json.load(open('$RUN_DIR/score.json')); assert 'dimensions' in d and len(d['dimensions'])>0; assert 'operational_level' in d and 'headline_rule_matched' in d"
     ok "score.json structure"
   else
     fail "score_assessment.py"
@@ -164,6 +164,26 @@ else
     ok "python unittest suite"
   else
     fail "python unittest suite"
+  fi
+
+  MANIFEST_TMP="$(mktemp)"
+  cat > "$MANIFEST_TMP" <<'EOF'
+# Factory MANIFEST
+| FACT-100 | Done |
+| FACT-101 | deferred |
+EOF
+  if bash scripts/verify_factory_manifest.sh "$MANIFEST_TMP" | grep -q 'factory_backlog_complete: partial'; then
+    ok "verify_factory_manifest.sh"
+  else
+    fail "verify_factory_manifest.sh"
+  fi
+  rm -f "$MANIFEST_TMP"
+
+  COLLECT_OUT="$(bash scripts/collect_ci_signals.sh "$ROOT" 2>&1 || true)"
+  if echo "$COLLECT_OUT" | grep -q 'CI signal scan'; then
+    ok "collect_ci_signals.sh"
+  else
+    fail "collect_ci_signals.sh"
   fi
 fi
 
