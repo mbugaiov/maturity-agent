@@ -1,0 +1,15 @@
+# Secrets — never commit
+**/.secrets/**
+projects/*
+!projects/_template/
+
+# Assessments may contain internal URLs — keep in project repo if sensitive
+# projects/*/assessments/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# macOS
+.DS_Store

@@ -1,0 +1,13 @@
+# signals:
+#   <signal_id>:
+#     answer: yes | partial | no | na
+#     citation: "file path, Jira KEY, or interview note"
+#     notes: ""
+
+meta:
+  project: "<slug>"
+  assessment: "<YYYY-MM-DD>-<scope>"
+  assessor: ""
+  date: ""
+
+signals: {}

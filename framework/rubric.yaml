@@ -1,0 +1,202 @@
+# Dan Shapiro maturity rubric — machine-readable
+# Version: 1.0
+# Authority: framework/shapiro-levels.md
+#
+# Scoring model:
+#   Each dimension has signals tagged with minimum_level (0-5).
+#   evidence.yaml answers: yes | partial | no | na
+#   Dimension level = highest L where ALL mandatory signals for that L are yes (partial counts as half)
+#   Overall = min(dimension levels) for "floor" report OR weighted headline (agent explains in report)
+
+version: "1.0"
+framework: dan-shapiro
+sub_levels:
+  l5-prime:
+    id: L5′
+    label: "L5 on STG"
+    description: "Full factory on non-PROD; humans gate PROD and policy exceptions"
+
+dimensions:
+  - id: intent_spec
+    name: "Intent & specification"
+    weight: 1.2
+    signals:
+      - id: human_writes_tickets
+        min_level: 4
+        mandatory: true
+        prompt: "Humans write durable work tickets (Jira/Linear/etc.) as the spec source"
+      - id: structured_acceptance
+        min_level: 4
+        mandatory: true
+        prompt: "Acceptance criteria are structured (Gherkin, OpenSpec scenarios, or checklist)"
+      - id: openspec_or_prd
+        min_level: 4
+        mandatory: false
+        prompt: "OpenSpec or PRD traces requirements to scenarios"
+      - id: agents_do_not_invent_scope
+        min_level: 5
+        mandatory: true
+        prompt: "Agents implement ticket scope only; no silent scope expansion"
+
+  - id: agent_topology
+    name: "Agent topology"
+    weight: 1.0
+    signals:
+      - id: multiple_roles
+        min_level: 4
+        mandatory: true
+        prompt: "≥2 specialized agent roles (e.g. dev + QA or dev + CR)"
+      - id: written_role_boundaries
+        min_level: 4
+        mandatory: true
+        prompt: "Written boundaries for who implements vs reviews vs tests"
+      - id: cr_does_not_pick_tickets
+        min_level: 5
+        mandatory: false
+        prompt: "CR/review agent does not own Jira implementation queue"
+
+  - id: dev_autonomy
+    name: "Development autonomy"
+    weight: 1.0
+    signals:
+      - id: agent_opens_pr
+        min_level: 3
+        mandatory: true
+        prompt: "Agent can produce a PR/MR from a ticket"
+      - id: openspec_before_code
+        min_level: 4
+        mandatory: false
+        prompt: "Spec-first gate before feature code (OpenSpec validate)"
+      - id: machine_dev_handoff
+        min_level: 5
+        mandatory: true
+        prompt: "Written machine DoD for dev → Validate/Testing handoff"
+      - id: auto_merge
+        min_level: 5
+        mandatory: false
+        prompt: "Agent squash-merges when CI + review gates are green"
+
+  - id: review_gate
+    name: "Code review gate"
+    weight: 0.9
+    signals:
+      - id: review_agent_exists
+        min_level: 4
+        mandatory: true
+        prompt: "Dedicated review step (CR agent or mandatory review)"
+      - id: blocking_review_ci
+        min_level: 5
+        mandatory: true
+        prompt: "Pipeline fails when review reports blocking issues"
+
+  - id: deploy_verification
+    name: "Deploy verification"
+    weight: 1.1
+    signals:
+      - id: auto_deploy_nonprod
+        min_level: 4
+        mandatory: true
+        prompt: "Merge triggers deploy to non-PROD (STG/preview)"
+      - id: buildid_gate
+        min_level: 5
+        mandatory: true
+        prompt: "Live environment buildId verified against merge commit before QA sign-off"
+
+  - id: qa_autonomy
+    name: "QA autonomy"
+    weight: 1.2
+    signals:
+      - id: qa_agent_or_unattended_tests
+        min_level: 4
+        mandatory: true
+        prompt: "QA agent or unattended test suite exercises deployed build"
+      - id: two_pass_or_equivalent
+        min_level: 4
+        mandatory: false
+        prompt: "Two-pass or equivalent real-input + automation validation"
+      - id: auto_accept_done
+        min_level: 5
+        mandatory: true
+        prompt: "Validate/Testing → Done without human click when machine DoD met"
+
+  - id: defect_loop
+    name: "Defect loop"
+    weight: 0.8
+    signals:
+      - id: auto_file_confirmed_bugs
+        min_level: 5
+        mandatory: true
+        prompt: "Confirmed defects filed automatically with dedupe"
+      - id: regression_reopen
+        min_level: 5
+        mandatory: false
+        prompt: "Regressions reopen same ticket automatically"
+
+  - id: provenance
+    name: "Provenance & audit"
+    weight: 0.8
+    signals:
+      - id: jira_handoff_comments
+        min_level: 4
+        mandatory: true
+        prompt: "Dev/QA handoff comments include build, PR, and outcome"
+      - id: factory_ledger
+        min_level: 5
+        mandatory: false
+        prompt: "Machine ledger (JSONL or equivalent) for ticks and DoD verdicts"
+
+  - id: human_boundaries
+    name: "Human boundaries"
+    weight: 1.0
+    signals:
+      - id: humans_own_intent
+        min_level: 4
+        mandatory: true
+        prompt: "Humans own product intent and epic scope"
+      - id: needs_human_policy
+        min_level: 5
+        mandatory: true
+        prompt: "Documented needs-human escape hatch; agents stop instead of guessing"
+      - id: prod_human_gated
+        min_level: 5
+        mandatory: false
+        prompt: "PROD deploy explicitly human-gated (acceptable for L5′)"
+
+  - id: factory_loop
+    name: "Factory loop"
+    weight: 1.0
+    signals:
+      - id: scheduled_ticks
+        min_level: 5
+        mandatory: true
+        prompt: "Scheduled or armed loops drain queues without starting each session manually"
+      - id: tick_gate
+        min_level: 5
+        mandatory: false
+        prompt: "End-of-tick gate requires terminal DoD verdict per scope ticket"
+
+  - id: portability
+    name: "Portability"
+    weight: 0.6
+    signals:
+      - id: project_template
+        min_level: 4
+        mandatory: true
+        prompt: "New projects onboard from template (_template/ or equivalent)"
+      - id: slug_parameterized_scripts
+        min_level: 4
+        mandatory: true
+        prompt: "Scripts take slug/project id; no hardcoded product names in engine"
+      - id: second_product_proof
+        min_level: 5
+        mandatory: false
+        prompt: "Second product/repo successfully onboarded"
+
+level_headline_rules:
+  - condition: "factory_loop >= 5 AND qa_autonomy >= 5 AND dev_autonomy >= 5 AND deploy_verification >= 5 AND prod_human_gated == yes"
+    headline: "L5′ (L5 on STG)"
+  - condition: "factory_loop >= 5 AND qa_autonomy >= 5 AND dev_autonomy >= 5 AND prod_human_gated == no AND second_product_proof == yes"
+    headline: "L5 (full dark factory)"
+  - condition: "agent_topology >= 4 AND intent_spec >= 4"
+    headline: "L4 (engineering team)"
+  - fallback: "Use floor dimension level; agent narrates reaching direction"

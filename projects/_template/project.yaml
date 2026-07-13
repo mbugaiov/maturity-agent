@@ -1,0 +1,14 @@
+name: "<Project Name>"
+slug: "<slug>"
+framework: dan-shapiro
+rubric_version: "1.0"
+
+repos: []
+# Example:
+#   - role: product
+#     path: /abs/path/to/product-app
+#   - role: agent-tooling
+#     path: /abs/path/to/agent-tooling
+
+last_assessment: null
+headline_level: null
