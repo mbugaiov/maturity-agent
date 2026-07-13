@@ -24,7 +24,7 @@ for tpl in intake.md assessment.md evidence.yaml report.md gap-backlog.md presen
 done
 
 # --- Skills (canonical + adapters) ---
-for s in maturity-assess maturity-interview maturity-report maturity-presentation; do
+for s in maturity-assess maturity-interview maturity-report maturity-presentation maturity-code-review; do
   [[ -f "skills/$s/SKILL.md" ]] && ok "canonical skill $s" || fail "canonical skill $s"
   [[ -f ".cursor/skills/$s/SKILL.md" ]] && ok "cursor skill $s" || fail "cursor skill $s"
   [[ -f ".claude/skills/$s/SKILL.md" ]] && ok "claude skill $s" || fail "claude skill $s"
@@ -42,7 +42,13 @@ done
 
 # --- Rules + provider entry points ---
 [[ -f rules/maturity-engine.md ]] && ok "rules/maturity-engine.md" || fail "rules/maturity-engine.md"
+[[ -f rules/code-review-gate.md ]] && ok "rules/code-review-gate.md" || fail "rules/code-review-gate.md"
+[[ -f CONTRIBUTING.md ]] && ok "CONTRIBUTING.md" || fail "CONTRIBUTING.md"
+[[ -f .github/pull_request_template.md ]] && ok "pull_request_template.md" || fail "pull_request_template.md"
 [[ -f .cursor/rules/maturity-engine.mdc ]] && ok "maturity-engine.mdc" || fail "maturity-engine.mdc"
+[[ -f .cursor/rules/code-review-gate.mdc ]] && ok "code-review-gate.mdc" || fail "code-review-gate.mdc"
+[[ -f CLAUDE.md ]] && ok "CLAUDE.md" || fail "CLAUDE.md"
+[[ -f PROVIDERS.md ]] && ok "PROVIDERS.md" || fail "PROVIDERS.md"
 [[ -f .github/copilot-instructions.md ]] && ok "copilot-instructions.md" || fail "copilot-instructions.md"
 
 # --- Sync script ---
@@ -52,6 +58,16 @@ if ./scripts/sync_adapters.sh >/dev/null 2>&1; then
 else
   fail "sync_adapters.sh"
 fi
+
+# Adapter drift (skills/rules must match synced adapters)
+DRIFT=0
+for path in .cursor/skills .cursor/rules/maturity-engine.mdc .cursor/rules/code-review-gate.mdc .claude/skills .github/copilot-instructions.md; do
+  if ! git diff --quiet -- "$path" 2>/dev/null; then
+    fail "adapter drift $path"
+    DRIFT=1
+  fi
+done
+[[ "$DRIFT" -eq 0 ]] && ok "adapter sync parity"
 
 # --- Script CLI validation ---
 if ./scripts/new_project.sh 2>/dev/null; then
@@ -154,10 +170,9 @@ fi
 echo ""
 echo "Results: $OK passed, $NO failed"
 
-# --- Engine agnosticism (tracked files only) ---
 cd "$ROOT"
 chmod +x scripts/check_engine_agnostic.sh
-if ./scripts/check_engine_agnostic.sh; then
+if ./scripts/check_engine_agnostic.sh >/dev/null 2>&1; then
   ok "check_engine_agnostic.sh"
 else
   fail "check_engine_agnostic.sh"

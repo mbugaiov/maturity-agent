@@ -58,6 +58,10 @@ Commit **canonical + synced adapters** together.
 2. Read skills from `skills/<name>/SKILL.md` on demand.
 3. Enforce `rules/maturity-engine.md` constraints.
 
+## Code review (engine PRs)
+
+Run `bash scripts/pre_merge_check.sh` before merge. Skill: `skills/maturity-code-review/SKILL.md`. See `CONTRIBUTING.md`.
+
 ## Assessing targets that use a different provider
 
 When inspecting a **target project's** repos, look for agent config in **any** of these locations (record paths in `intake.md`):
@@ -82,6 +86,5 @@ Maturity scoring is **provider-agnostic** — the rubric measures roles, gates, 
 
 ## Maintainer checklist
 
-- [ ] Edit `skills/` or `rules/`, then `./scripts/sync_adapters.sh`
-- [ ] `bash tests/run_tests.sh` passes
+- [ ] `bash scripts/pre_merge_check.sh` passes (tests + agnosticism + adapter sync)
 - [ ] No customer product names in engine files (grep gate)

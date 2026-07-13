@@ -52,17 +52,17 @@ scripts/new_assessment.sh <slug> "<scope>"
 
 ```bash
 pip install -r requirements.txt
-bash tests/run_tests.sh
-bash scripts/check_engine_agnostic.sh
+bash scripts/pre_merge_check.sh
 ```
 
-GitHub Actions runs the same checks on every push (`.github/workflows/ci.yml`).
+GitHub Actions runs the same gate on every push and PR (`.github/workflows/ci.yml`).
 
 ## Docs
 
 | File | Purpose |
 |------|---------|
 | `AGENTS.md` | Assessment loop + skill index |
+| `CONTRIBUTING.md` | PR workflow + code review |
 | `PROVIDERS.md` | Cursor, Claude, Copilot, Codex adapters |
 | `SETUP.md` | Onboarding a new target project |
 | `PORTABILITY.md` | Engine vs project data split |

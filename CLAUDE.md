@@ -16,8 +16,13 @@ Procedural detail lives in `.claude/skills/` (synced from canonical `skills/`):
 | Discover / evidence | `maturity-interview` |
 | Report | `maturity-report` |
 | Presentation | `maturity-presentation` |
+| Engine code review | `maturity-code-review` |
 
 Read the matching `SKILL.md` before that phase — do not improvise from memory.
+
+## Contributors
+
+Before merging engine changes: `bash scripts/pre_merge_check.sh` — see `CONTRIBUTING.md`.
 
 ## Framework authority
 

@@ -18,6 +18,7 @@ One project = one target system; one assessment = one dated folder under `assess
 | Interviewing stakeholders or reading repos for signals | `maturity-interview` |
 | Writing the final report + level recommendation | `maturity-report` |
 | Building HTML/markdown presentation deck | `maturity-presentation` |
+| Reviewing engine changes before merge | `maturity-code-review` |
 
 ## The loop (every assessment)
 
@@ -44,6 +45,16 @@ One project = one target system; one assessment = one dated folder under `assess
 - **Distinguish L5′ (factory on STG)** from full L5 (PROD, multi-product, zero escalation) — see `framework/shapiro-levels.md`.
 - **Per-project isolation** — only read `projects/<slug>/`; never mix another project's intake.
 - Never commit secrets — links and redacted excerpts only.
+
+## Engine maintenance (contributors)
+
+Before merging engine changes:
+
+```bash
+bash scripts/pre_merge_check.sh
+```
+
+See `CONTRIBUTING.md` and skill `maturity-code-review`. Rules: `rules/code-review-gate.md`.
 
 ## Output layout
 

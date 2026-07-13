@@ -19,8 +19,5 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Engine self-tests
-        run: bash tests/run_tests.sh
-
-      - name: Engine agnosticism gate
-        run: bash scripts/check_engine_agnostic.sh
+      - name: Pre-merge gate
+        run: bash scripts/pre_merge_check.sh
