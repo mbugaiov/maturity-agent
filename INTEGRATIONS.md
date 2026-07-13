@@ -36,4 +36,6 @@ A team may run both; link repos in intake only.
 
 ## Engine agnosticism rule
 
-Files under `framework/`, `.cursor/`, `scripts/`, and `templates/` must **not** name customer products, private repo paths, or real issue keys. Use placeholders (`<slug>`, `PROG-123`) in examples.
+Files under `framework/`, `skills/`, `rules/`, `scripts/`, and `templates/` must **not** name customer products, private repo paths, or real issue keys. Use placeholders (`<slug>`, `PROG-123`) in examples.
+
+Provider adapters (`.cursor/`, `.claude/`, `.github/copilot-instructions.md`) are synced from canonical `skills/` and `rules/` — see `PROVIDERS.md`.

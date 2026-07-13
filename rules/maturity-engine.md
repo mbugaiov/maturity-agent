@@ -1,9 +1,3 @@
----
-description: Always-on constraints for the Maturity Agent engine (Dan Shapiro assessments).
-globs: "{maturity-agent/**,scripts/**,projects/**,templates/**,framework/**,skills/**,rules/**,.cursor/**}"
-alwaysApply: false
----
-
 # Maturity Agent — hard rules
 
 - Read `framework/shapiro-levels.md` before assigning a headline level.

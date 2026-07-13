@@ -6,7 +6,7 @@ Point the agent at a project (repo, agent setup, pipeline, issue tracker) and it
 
 ## One project = one folder · one engagement = one assessment
 
-The **engine** (`AGENTS.md`, `framework/`, `templates/`, `scripts/`, `.cursor/skills/`, `.cursor/rules/`) is shared.
+The **engine** (`AGENTS.md`, `framework/`, `templates/`, `scripts/`, `skills/`, `rules/`) is shared and **provider-neutral** — adapters for Cursor, Claude, Copilot, and Codex are synced via `scripts/sync_adapters.sh` (see `PROVIDERS.md`).
 Each **target system** gets one folder under `projects/<slug>/`.
 Each **assessment** is a dated run inside that project:
 
@@ -31,7 +31,7 @@ scripts/new_assessment.sh <slug> "<scope>"
    scripts/new_assessment.sh acme baseline
    ```
 
-4. **Ask the agent**:
+4. **Ask the agent** (any provider — see `PROVIDERS.md`):
 
    > Assess `projects/acme` against Dan Shapiro's framework. Use the baseline assessment folder, collect evidence from the linked repos, and write the report.
 
@@ -53,6 +53,7 @@ scripts/new_assessment.sh <slug> "<scope>"
 | File | Purpose |
 |------|---------|
 | `AGENTS.md` | Assessment loop + skill index |
+| `PROVIDERS.md` | Cursor, Claude, Copilot, Codex adapters |
 | `SETUP.md` | Onboarding a new target project |
 | `PORTABILITY.md` | Engine vs project data split |
 | `framework/shapiro-levels.md` | L0–L5 definitions |

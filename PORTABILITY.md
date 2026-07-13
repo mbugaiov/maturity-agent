@@ -6,18 +6,25 @@ The **engine** is reusable; **project data** is per target system.
 
 ```
 maturity-agent/
-  AGENTS.md
-  framework/          shapiro-levels.md, rubric.yaml, signals.md
-  .cursor/rules/      maturity-engine.mdc
-  .cursor/skills/     maturity-assess, maturity-interview, maturity-report
-  templates/          intake, assessment, report, gap-backlog
-  scripts/            new_project.sh, new_assessment.sh, score_assessment.py, build_presentation.py
+  AGENTS.md             universal spine (Codex, CLI agents)
+  CLAUDE.md             Claude Code entry
+  PROVIDERS.md          multi-provider adapters
+  framework/            shapiro-levels.md, rubric.yaml, signals.md
+  skills/               canonical skills (source of truth)
+  rules/                maturity-engine.md
+  .cursor/              Cursor adapter (synced)
+  .claude/              Claude adapter (synced)
+  .github/              Copilot adapter (synced)
+  templates/            intake, assessment, report, gap-backlog
+  scripts/              new_project.sh, new_assessment.sh, score_assessment.py, build_presentation.py, sync_adapters.sh
   tests/run_tests.sh
   projects/_template/
 ```
 
 **Rule:** engine files must not hardcode project names, repo URLs, or issue keys.
 Use `projects/<slug>/` and placeholders.
+
+After editing `skills/` or `rules/`, run `scripts/sync_adapters.sh` and commit adapters with canonical files.
 
 ## Per-project data
 
@@ -68,7 +75,7 @@ Assessment **reads** linked repos; it does not modify them. Typical intake links
 
 | Role | What to inspect |
 |------|-----------------|
-| Product app | `.cursor/rules/`, OpenSpec, CI, deploy scripts |
+| Product app | `AGENTS.md`, agent rules/skills (any provider), OpenSpec, CI, deploy scripts |
 | Agent tooling | Factory rules, loop skills, gate scripts |
 | Issue tracker | Closed-loop ticket traces |
 

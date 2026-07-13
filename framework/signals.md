@@ -23,7 +23,7 @@ Machine scoring uses `rubric.yaml`; this file is the assessor's field guide.
 | L4 | **≥2 specialized roles** (e.g. dev + QA, or dev + CR) with written boundaries |
 | L5 | Dev + CR + QA (or equivalent) + schedulers; CR never picks Jira tickets |
 
-**Inspect:** `AGENTS.md`, `.cursor/rules/`, agent ownership manifest or table.
+**Inspect:** `AGENTS.md`, agent rules/skills dir (`.cursor/rules/`, `.claude/skills/`, `rules/`, etc.), agent ownership manifest or table.
 
 ## 3. dev_autonomy — Build and handoff
 

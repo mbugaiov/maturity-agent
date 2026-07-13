@@ -17,7 +17,7 @@
 |------|-------------|--------|-------|
 | Product app | | `main` | |
 | Agent tooling | | | optional separate repo |
-| Dev agent config | | | `.cursor/` in product repo |
+| Dev agent config | | | e.g. `.cursor/`, `.claude/`, `AGENTS.md` |
 | Docs / runbooks | | | optional |
 
 ## Agent topology (declared)

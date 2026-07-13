@@ -3,8 +3,10 @@
 ## 1. Clone / open engine
 
 ```bash
-cd maturity-agent   # open as Cursor workspace (or parent monorepo)
+cd maturity-agent   # open as workspace (Cursor, VS Code+Copilot, Claude Code, etc.)
 ```
+
+See `PROVIDERS.md` for provider-specific entry points.
 
 ## 2. Create a target project
 
@@ -30,7 +32,7 @@ scripts/new_assessment.sh acme baseline
 
 ## 5. Run agent assessment
 
-In Cursor:
+With your AI provider (see `PROVIDERS.md`):
 
 > Assess `projects/acme` using skill `maturity-assess`. Read linked repos, fill `evidence.yaml`, run `score_assessment.py`, write `report.md`.
 
@@ -74,7 +76,7 @@ See `PORTABILITY.md` for layout rules.
 |------|---------|
 | Python 3.9+ | `score_assessment.py` |
 | PyYAML | rubric/evidence parsing (`pip install pyyaml`) |
-| Cursor + agent | interview + report |
+| AI agent (any provider) | interview + report — see `PROVIDERS.md` |
 | `gh` / Jira API | optional read-only ticket traces |
 
 ## Pre-push checklist (engine maintainers)

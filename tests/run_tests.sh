@@ -15,13 +15,27 @@ fail() { echo "FAIL $1"; NO=$((NO + 1)); }
 [[ -f framework/rubric.yaml ]] && ok "rubric.yaml" || fail "rubric.yaml"
 [[ -f framework/signals.md ]] && ok "signals.md" || fail "signals.md"
 
-# Skills
+# Skills (canonical + adapters)
 for s in maturity-assess maturity-interview maturity-report maturity-presentation; do
-  [[ -f ".cursor/skills/$s/SKILL.md" ]] && ok "skill $s" || fail "skill $s"
+  [[ -f "skills/$s/SKILL.md" ]] && ok "canonical skill $s" || fail "canonical skill $s"
+  [[ -f ".cursor/skills/$s/SKILL.md" ]] && ok "cursor skill $s" || fail "cursor skill $s"
+  [[ -f ".claude/skills/$s/SKILL.md" ]] && ok "claude skill $s" || fail "claude skill $s"
 done
 
-# Rules
+# Rules + provider entry points
+[[ -f rules/maturity-engine.md ]] && ok "rules/maturity-engine.md" || fail "rules/maturity-engine.md"
 [[ -f .cursor/rules/maturity-engine.mdc ]] && ok "maturity-engine.mdc" || fail "maturity-engine.mdc"
+[[ -f CLAUDE.md ]] && ok "CLAUDE.md" || fail "CLAUDE.md"
+[[ -f .github/copilot-instructions.md ]] && ok "copilot-instructions.md" || fail "copilot-instructions.md"
+[[ -f PROVIDERS.md ]] && ok "PROVIDERS.md" || fail "PROVIDERS.md"
+
+# Sync script
+chmod +x scripts/sync_adapters.sh
+if ./scripts/sync_adapters.sh >/dev/null 2>&1; then
+  ok "sync_adapters.sh"
+else
+  fail "sync_adapters.sh"
+fi
 
 # Scripts executable logic (dry run new_project in /tmp)
 TMP="$(mktemp -d)"
@@ -109,7 +123,7 @@ echo "Results: $OK passed, $NO failed"
 
 # Engine must not reference specific customer projects
 FORBIDDEN='RQ-[0-9]|lrm|qa-agent|colibri|lab-test|sol-ark|solark|mbugaiov'
-if rg -i "$FORBIDDEN" framework .cursor templates scripts AGENTS.md README.md SETUP.md PORTABILITY.md INTEGRATIONS.md 2>/dev/null | rg -v 'Pre-push checklist|FORBIDDEN|no hits'; then
+if rg -i "$FORBIDDEN" framework skills rules .cursor .claude .github templates scripts AGENTS.md CLAUDE.md PROVIDERS.md README.md SETUP.md PORTABILITY.md INTEGRATIONS.md 2>/dev/null | rg -v 'Pre-push checklist|FORBIDDEN|no hits'; then
   fail "engine contains project-specific references"
 else
   ok "engine project-agnostic grep"
