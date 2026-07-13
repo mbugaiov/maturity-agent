@@ -81,5 +81,8 @@ See `PORTABILITY.md` for layout rules.
 
 ## Pre-push checklist (engine maintainers)
 
-- [ ] `bash tests/run_tests.sh` passes (includes project-agnostic grep gate)
+- [ ] `bash tests/run_tests.sh` passes (integration + unittest + agnosticism gate)
+- [ ] `bash scripts/check_engine_agnostic.sh` passes (no project-specific leaks)
 - [ ] `projects/*` except `_template/` not committed
+
+CI runs the same gates on every push to `master` (see `.github/workflows/ci.yml`).

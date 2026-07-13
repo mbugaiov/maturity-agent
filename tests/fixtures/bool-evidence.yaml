@@ -1,0 +1,12 @@
+meta:
+  project: fixture-proj
+signals:
+  human_writes_tickets:
+    answer: true
+    citation: "YAML boolean true normalizes to yes"
+  structured_acceptance:
+    answer: false
+    citation: "missing"
+  multiple_roles:
+    answer: no
+    citation: "single agent"

@@ -1,0 +1,41 @@
+meta:
+  project: fixture-proj
+  date: "2026-07-13"
+  target_repo: ../example-app
+signals:
+  human_writes_tickets:
+    answer: yes
+    citation: "docs/tickets.md"
+  structured_acceptance:
+    answer: yes
+    citation: "openspec/scenarios"
+  multiple_roles:
+    answer: yes
+    citation: "AGENTS.md role table"
+  written_role_boundaries:
+    answer: yes
+    citation: "rules/engine.md"
+  agent_opens_pr:
+    answer: yes
+    citation: "CI opens PR"
+  review_agent_exists:
+    answer: yes
+    citation: "review gate"
+  auto_deploy_nonprod:
+    answer: yes
+    citation: "deploy STG"
+  qa_agent_or_unattended_tests:
+    answer: yes
+    citation: "qa loop"
+  jira_handoff_comments:
+    answer: yes
+    citation: "handoff script"
+  humans_own_intent:
+    answer: yes
+    citation: "needs-human doc"
+  project_template:
+    answer: yes
+    citation: "projects/_template"
+  slug_parameterized_scripts:
+    answer: yes
+    citation: "new_project.sh"

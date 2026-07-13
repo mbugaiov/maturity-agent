@@ -48,6 +48,16 @@ scripts/new_assessment.sh <slug> "<scope>"
    open projects/acme/assessments/<date>-baseline/presentation.html
    ```
 
+## Tests & CI
+
+```bash
+pip install -r requirements.txt
+bash tests/run_tests.sh
+bash scripts/check_engine_agnostic.sh
+```
+
+GitHub Actions runs the same checks on every push (`.github/workflows/ci.yml`).
+
 ## Docs
 
 | File | Purpose |
