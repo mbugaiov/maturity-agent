@@ -11,4 +11,4 @@
 - Never commit secrets; redact tokens in citations.
 - **Engine agnosticism:** do not add customer product names, private repo URLs, or real issue keys to files under `framework/`, `skills/`, `rules/`, `scripts/`, or `templates/`.
 
-Procedural how-to: skills `maturity-assess`, `maturity-interview`, `maturity-report`, `maturity-presentation` (canonical: `skills/`; provider adapters synced via `scripts/sync_adapters.sh`).
+Procedural how-to: skills `maturity-assess`, `maturity-interview`, `maturity-report`, `maturity-presentation`, `maturity-code-review` (canonical: `skills/`; provider adapters synced via `scripts/sync_adapters.sh`).

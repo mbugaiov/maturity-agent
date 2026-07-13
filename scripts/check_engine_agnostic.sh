@@ -5,10 +5,11 @@
 # Exit 0 = clean. Exit 1 = forbidden pattern found.
 set -uo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$ROOT"
 
-FORBIDDEN='(RQ-[0-9]+|\blrm\b|qa-agent|\bcolibri\b|lab-test|sol-ark|solark|mbugaiov|/Users/max/)'
+FORBIDDEN='(RQ-[0-9]+|\blrm\b|qa-agent|colibri|lab-test|sol-ark|solark|mbugaiov|/Users/max/)'
 
 PATHS=(
   .cursor
@@ -40,6 +41,7 @@ while IFS= read -r f; do
     echo "$line" | grep -q 'project-agnostic' && continue
     echo "$line" | grep -q 'engine-agnostic' && continue
     echo "$line" | grep -q 'no hits' && continue
+    echo "$line" | grep -q 'test_negative_gates.sh' && continue
     echo "engine leak: $line"
     FAIL=1
   done < <(git grep -nEi "$FORBIDDEN" -- "$f" 2>/dev/null || true)

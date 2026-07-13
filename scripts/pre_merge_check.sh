@@ -17,7 +17,14 @@ chmod +x scripts/sync_adapters.sh
 ./scripts/sync_adapters.sh >/dev/null
 
 DRIFT=0
-for path in .cursor/skills .cursor/rules/maturity-engine.mdc .claude/skills .github/copilot-instructions.md; do
+ADAPTER_PATHS=(
+  .cursor/skills
+  .cursor/rules/maturity-engine.mdc
+  .cursor/rules/code-review-gate.mdc
+  .claude/skills
+  .github/copilot-instructions.md
+)
+for path in "${ADAPTER_PATHS[@]}"; do
   if ! git diff --quiet -- "$path" 2>/dev/null; then
     echo "DRIFT: $path differs after sync_adapters.sh — commit synced adapters"
     DRIFT=1
