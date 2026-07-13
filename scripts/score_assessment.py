@@ -4,11 +4,12 @@
 Usage:
     python3 scripts/score_assessment.py projects/<slug>/assessments/<date>-<scope>
 
-Writes score.json alongside evidence.yaml. Requires PyYAML (pip install pyyaml) or uses stdlib-only fallback.
+Writes score.json alongside evidence.yaml. Requires PyYAML (pip install pyyaml).
 """
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -16,6 +17,24 @@ try:
     import yaml  # type: ignore
 except ImportError:
     yaml = None
+
+# Dimensions that define routine factory operation on the target environment.
+OPERATIONAL_DIMS = frozenset({
+    "dev_autonomy",
+    "review_gate",
+    "deploy_verification",
+    "qa_autonomy",
+    "defect_loop",
+    "factory_loop",
+})
+
+# Signals where per-repo product CI is authoritative when present.
+PER_REPO_SIGNALS = frozenset({
+    "blocking_review_ci",
+    "auto_merge",
+    "auto_deploy_nonprod",
+    "buildid_gate",
+})
 
 
 def load_yaml(path: Path) -> dict:
@@ -33,6 +52,25 @@ def normalize_answer(ans) -> str:
 
 def answer_weight(ans) -> float:
     return {"yes": 1.0, "partial": 0.5, "no": 0.0, "na": 1.0}.get(normalize_answer(ans), 0.0)
+
+
+def effective_signal_answer(entry: dict | None, signal_id: str | None = None) -> str:
+    """Resolve signal answer; per_repo.product wins for shipping-repo signals."""
+    if not entry:
+        return "no"
+    per_repo = entry.get("per_repo") or {}
+    if per_repo:
+        if signal_id in PER_REPO_SIGNALS and "product" in per_repo:
+            return normalize_answer(per_repo["product"])
+        weights = [answer_weight(v) for v in per_repo.values()]
+        if not weights:
+            return normalize_answer(entry.get("answer", "no"))
+        if max(weights) >= 1.0:
+            return "yes"
+        if max(weights) >= 0.5:
+            return "partial"
+        return "no"
+    return normalize_answer(entry.get("answer", "no"))
 
 
 def dimension_level(signals: list, evidence: dict) -> dict:
@@ -59,8 +97,8 @@ def dimension_level(signals: list, evidence: dict) -> dict:
         for sig in checks:
             sid = sig["id"]
             entry = (evidence.get("signals") or {}).get(sid) or {}
-            ans = entry.get("answer", "no")
-            if normalize_answer(ans) == "na":
+            ans = effective_signal_answer(entry, sid)
+            if ans == "na":
                 continue
             w = answer_weight(ans)
             total += 1
@@ -85,6 +123,101 @@ def dimension_level(signals: list, evidence: dict) -> dict:
     return {"level": achieved, "details": details}
 
 
+def signal_answer(evidence: dict, signal_id: str) -> str:
+    entry = (evidence.get("signals") or {}).get(signal_id) or {}
+    return effective_signal_answer(entry, signal_id)
+
+
+def apply_dimension_adjustments(dimensions: list[dict], evidence: dict, rubric: dict) -> list[dict]:
+    """Post-process dimension levels using rubric scoring_adjustments."""
+    adjustments = rubric.get("scoring_adjustments") or {}
+    dim_by_id = {d["id"]: d for d in dimensions}
+    signals = evidence.get("signals") or {}
+
+    # factory_loop: partial armed loop + tick gate still counts as operational L5′
+    factory_adj = adjustments.get("factory_loop") or {}
+    if "factory_loop" in dim_by_id:
+        scheduled = signal_answer(evidence, "scheduled_ticks")
+        tick_gate = signal_answer(evidence, "tick_gate")
+        backlog = signal_answer(evidence, "factory_backlog_complete")
+        min_partial = int(factory_adj.get("partial_with_tick_gate_min_level", 4))
+        min_backlog = int(factory_adj.get("backlog_complete_with_tick_gate_min_level", 4))
+
+        boost = dim_by_id["factory_loop"]["level"]
+        if scheduled in ("yes", "partial") and tick_gate == "yes":
+            boost = max(boost, min_partial)
+        if backlog == "yes" and tick_gate == "yes":
+            boost = max(boost, min_backlog)
+        if scheduled == "yes" and tick_gate == "yes":
+            boost = max(boost, 5)
+
+        if boost != dim_by_id["factory_loop"]["level"]:
+            dim_by_id["factory_loop"]["level"] = boost
+            dim_by_id["factory_loop"]["adjusted"] = True
+            dim_by_id["factory_loop"]["adjustment_reason"] = (
+                f"scheduled_ticks={scheduled}, tick_gate={tick_gate}, "
+                f"factory_backlog_complete={backlog}"
+            )
+
+    return list(dim_by_id.values())
+
+
+def eval_headline_condition(condition: str, dim_levels: dict[str, int], evidence: dict) -> bool:
+    """Evaluate rubric level_headline_rules condition strings."""
+    parts = [p.strip() for p in condition.split(" AND ") if p.strip()]
+    for part in parts:
+        ge_match = re.match(r"^(\w+)\s*>=\s*(\d+)$", part)
+        if ge_match:
+            dim_id, min_lvl = ge_match.group(1), int(ge_match.group(2))
+            if dim_levels.get(dim_id, 0) < min_lvl:
+                return False
+            continue
+
+        eq_match = re.match(r"^(\w+)\s*==\s*(yes|no|partial|na)$", part)
+        if eq_match:
+            sig_id, expected = eq_match.group(1), eq_match.group(2)
+            if signal_answer(evidence, sig_id) != expected:
+                return False
+            continue
+
+        return False
+    return True
+
+
+def resolve_headline(rubric: dict, dim_levels: dict[str, int], evidence: dict) -> dict:
+    """Pick headline from level_headline_rules; return hint + matched rule."""
+    for rule in rubric.get("level_headline_rules") or []:
+        if "condition" not in rule:
+            continue
+        if eval_headline_condition(rule["condition"], dim_levels, evidence):
+            return {
+                "headline_hint": rule["headline"],
+                "headline_rule_matched": rule["condition"],
+            }
+
+    fallback = next(
+        (r.get("fallback") for r in rubric.get("level_headline_rules") or [] if "fallback" in r),
+        None,
+    )
+    operational = min(
+        (dim_levels.get(d, 0) for d in OPERATIONAL_DIMS),
+        default=0,
+    )
+    weighted_floor = min(dim_levels.values()) if dim_levels else 0
+
+    if operational >= 5:
+        hint = "L5′ (L5 on STG)" if signal_answer(evidence, "prod_human_gated") == "yes" else "L5"
+    elif operational >= 4:
+        hint = f"L{operational} (operational)"
+    else:
+        hint = f"L{weighted_floor} (floor)"
+
+    return {
+        "headline_hint": hint,
+        "headline_rule_matched": fallback or "computed fallback",
+    }
+
+
 def main() -> int:
     if len(sys.argv) != 2:
         print("Usage: score_assessment.py <assessment-dir>", file=sys.stderr)
@@ -99,7 +232,6 @@ def main() -> int:
     while root.name != "maturity-agent" and root.parent != root:
         root = root.parent
     if root.name != "maturity-agent":
-        # fallback: script relative
         root = Path(__file__).resolve().parent.parent
 
     rubric_path = root / "framework" / "rubric.yaml"
@@ -128,24 +260,31 @@ def main() -> int:
         levels.append(result["level"])
         weights.append(w)
 
+    dimensions_out = apply_dimension_adjustments(dimensions_out, evidence, rubric)
+    dim_levels = {d["id"]: d["level"] for d in dimensions_out}
+    levels = [d["level"] for d in dimensions_out]
+
     floor = min(levels) if levels else 0
     weighted = (
         sum(d["level"] * d["weight"] for d in dimensions_out) / sum(weights)
         if weights
         else 0
     )
+    operational = min(
+        (dim_levels.get(d, 0) for d in OPERATIONAL_DIMS),
+        default=0,
+    )
+
+    headline = resolve_headline(rubric, dim_levels, evidence)
 
     out = {
         "framework": rubric.get("framework"),
         "version": rubric.get("version"),
         "floor_level": floor,
+        "operational_level": operational,
         "weighted_level": round(weighted, 2),
         "dimensions": dimensions_out,
-        "headline_hint": (
-            "L5′ (L5 on STG)" if floor >= 5 and weighted >= 4.5
-            else f"L{int(weighted)}" if weighted >= 4
-            else f"L{floor} (floor)"
-        ),
+        **headline,
     }
 
     out_path = assess_dir / "score.json"

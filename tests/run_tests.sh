@@ -138,7 +138,7 @@ else
   if python3 scripts/score_assessment.py "$RUN_DIR" >/dev/null 2>&1; then
     ok "score_assessment.py"
     [[ -f "$RUN_DIR/score.json" ]] && ok "score.json written" || fail "score.json written"
-    python3 -c "import json; d=json.load(open('$RUN_DIR/score.json')); assert 'dimensions' in d and len(d['dimensions'])>0"
+    python3 -c "import json; d=json.load(open('$RUN_DIR/score.json')); assert 'dimensions' in d and len(d['dimensions'])>0; assert 'operational_level' in d and 'headline_rule_matched' in d"
     ok "score.json structure"
   else
     fail "score_assessment.py"

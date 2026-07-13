@@ -15,10 +15,17 @@
 
 | Role | Path or URL | Branch | Notes |
 |------|-------------|--------|-------|
-| Product app | | `main` | |
+| Product app | | `main` | **shipping repo — CI here is authoritative** |
 | Agent tooling | | | optional separate repo |
 | Dev agent config | | | e.g. `.cursor/`, `.claude/`, `AGENTS.md` |
 | Docs / runbooks | | | optional |
+
+### CI config paths (explicit)
+
+| Repo role | CI file path(s) |
+|-----------|-----------------|
+| Product | e.g. `bitbucket-pipelines.yml` |
+| Agent tooling | e.g. `.github/workflows/ci.yml` |
 
 ## Agent topology (declared)
 
@@ -36,6 +43,8 @@
 | Epic / program key | |
 | OpenSpec | yes / no — path |
 | PRD / requirements path | |
+| Factory MANIFEST path | e.g. `requirements/factory-tickets/MANIFEST.md` |
+| Epic Done snapshot | e.g. 11 Done + 1 deferred (date) |
 
 ## Pipeline & environments
 
@@ -48,10 +57,18 @@
 
 ## Factory loops (declared)
 
-| Loop | Running? | Cadence | Script / skill |
-|------|----------|---------|----------------|
-| Dev factory | | | |
-| QA factory | | | |
+| Loop | Running? | Cadence | Arm method | Script / skill |
+|------|----------|---------|------------|----------------|
+| Dev factory | | e.g. 5m | `/loop`, `arm_*_loop.sh`, cron, manual | |
+| QA factory | | | | |
+
+## Prior assessment (reconciliation)
+
+| Field | Value |
+|-------|-------|
+| Prior headline | e.g. L5′ on STG ~90% |
+| Prior source | slide / report / stakeholder |
+| Prior date | |
 
 ## Stakeholders (optional)
 

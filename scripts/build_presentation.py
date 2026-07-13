@@ -248,7 +248,7 @@ def build_html(ctx: dict) -> str:
         <div>
           <h3>Dimension scorecard</h3>
           <table class="mini"><tr><th>Dimension</th><th>Level</th></tr>{dim_rows}</table>
-          <p class="muted" style="font-size:.45em;margin-top:.4em">Floor L{ctx['floor']} · Weighted {ctx['weighted']}</p>
+          <p class="muted" style="font-size:.45em;margin-top:.4em">Operational L{ctx['operational']} · Floor L{ctx['floor']} · Weighted {ctx['weighted']}</p>
         </div>
         <div>
           <h3 class="green">Strengths</h3>
@@ -410,6 +410,7 @@ def main() -> int:
         "next_level": next_lvl,
         "dimensions": score.get("dimensions", []),
         "floor": score.get("floor_level", 0),
+        "operational": score.get("operational_level", 0),
         "weighted": score.get("weighted_level", 0),
         "strengths": strengths,
         "gap_bullets": gap_bullets,

@@ -63,6 +63,7 @@ class TestPresentationHelpers(unittest.TestCase):
             "next_level": "L4",
             "dimensions": [{"name": "Intent", "level": 4}],
             "floor": 3,
+            "operational": 3,
             "weighted": 3.2,
             "strengths": ["Spec-first"],
             "gap_bullets": ["No CI"],

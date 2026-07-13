@@ -33,7 +33,12 @@ Machine scoring uses `rubric.yaml`; this file is the assessor's field guide.
 | L4 | Agent implements from OpenSpec; human merges and deploys |
 | L5 | Agent merges (squash) when pipeline green; posts machine handoff to Jira |
 
-**Inspect:** machine DoD doc, pipeline workflow rules, handoff comment formatter/script.
+**Inspect (priority order):**
+1. **Product CI YAML** — `bitbucket-pipelines.yml`, `.github/workflows/*.yml` for `auto_merge`, squash step
+2. Scripts — `auto_merge_pr.sh`, `agent_squash_merge` pipeline step
+3. Machine DoD doc, handoff comment formatter
+
+**Anti-pattern:** workflow *prose* saying "human merge" does **not** override a shipped `auto_merge` step in product CI. Record `per_repo.product` in evidence when engine and product CI differ.
 
 ## 4. review_gate — Code review
 
@@ -43,7 +48,12 @@ Machine scoring uses `rubric.yaml`; this file is the assessor's field guide.
 | L4 | CR agent or mandatory human review; not always blocking CI |
 | L5 | **Blocking** review — pipeline fails on CR blocking findings |
 
-**Inspect:** CI workflow for review gate, `review.md` / Bugbot integration.
+**Inspect (priority order):**
+1. **Product CI YAML** — `check_review_gate.sh`, `review_gate`, blocking CR step
+2. Engine CI (secondary — may differ from shipping repo)
+3. `review.md` / Bugbot integration
+
+**Per-repo:** `blocking_review_ci` is **yes** when the **product** (shipping) pipeline fails on blocking CR findings.
 
 ## 5. deploy_verification — Environment truth
 
@@ -98,7 +108,25 @@ Machine scoring uses `rubric.yaml`; this file is the assessor's field guide.
 | L4 | On-demand agent sessions |
 | L5 | **Scheduled ticks** — dev factory + QA factory drain queues until idle |
 
-**Inspect:** loop scheduler scripts, cadence in `project-memory.md`, cron or armed watcher.
+**Inspect:** loop scheduler scripts, cadence in `project-memory.md`, cron or armed watcher, `factory/runs/*.jsonl`, factory MANIFEST.
+
+### `scheduled_ticks` answer guide
+
+| Answer | Criteria |
+|--------|----------|
+| **yes** | Loop armed and draining on cadence without per-ticket manual start |
+| **partial** | Arm once per session/week (`/loop`, `arm_*_loop.sh`), then unattended ticks |
+| **no** | Every tick requires manual chat/session start |
+
+**Scoring note:** `partial` + `tick_gate: yes` → `factory_loop` boosted to ≥ L4 (operational L5′). Strict L5 still needs `scheduled_ticks: yes`.
+
+### `factory_backlog_complete` (optional)
+
+| Answer | Criteria |
+|--------|----------|
+| **yes** | Factory program MANIFEST shows shipped tickets Done + run traces |
+| **partial** | Some Done, known deferred items documented |
+| **no** | No MANIFEST or program incomplete |
 
 ## 11. portability — Second product
 
