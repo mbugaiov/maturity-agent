@@ -165,6 +165,26 @@ else
   else
     fail "python unittest suite"
   fi
+
+  MANIFEST_TMP="$(mktemp)"
+  cat > "$MANIFEST_TMP" <<'EOF'
+# Factory MANIFEST
+| FACT-100 | Done |
+| FACT-101 | deferred |
+EOF
+  if bash scripts/verify_factory_manifest.sh "$MANIFEST_TMP" | grep -q 'factory_backlog_complete: partial'; then
+    ok "verify_factory_manifest.sh"
+  else
+    fail "verify_factory_manifest.sh"
+  fi
+  rm -f "$MANIFEST_TMP"
+
+  COLLECT_OUT="$(bash scripts/collect_ci_signals.sh "$ROOT" 2>&1 || true)"
+  if echo "$COLLECT_OUT" | grep -q 'CI signal scan'; then
+    ok "collect_ci_signals.sh"
+  else
+    fail "collect_ci_signals.sh"
+  fi
 fi
 
 echo ""

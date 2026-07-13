@@ -59,18 +59,25 @@ def effective_signal_answer(entry: dict | None, signal_id: str | None = None) ->
     if not entry:
         return "no"
     per_repo = entry.get("per_repo") or {}
+    top = normalize_answer(entry.get("answer", "no"))
     if per_repo:
-        if signal_id in PER_REPO_SIGNALS and "product" in per_repo:
-            return normalize_answer(per_repo["product"])
-        weights = [answer_weight(v) for v in per_repo.values()]
+        if signal_id in PER_REPO_SIGNALS:
+            if "product" in per_repo:
+                return normalize_answer(per_repo["product"])
+            return top
+        weights = [
+            answer_weight(v)
+            for v in per_repo.values()
+            if normalize_answer(v) != "na"
+        ]
         if not weights:
-            return normalize_answer(entry.get("answer", "no"))
+            return top
         if max(weights) >= 1.0:
             return "yes"
         if max(weights) >= 0.5:
             return "partial"
         return "no"
-    return normalize_answer(entry.get("answer", "no"))
+    return top
 
 
 def dimension_level(signals: list, evidence: dict) -> dict:
@@ -84,16 +91,10 @@ def dimension_level(signals: list, evidence: dict) -> dict:
     achieved = 0
     details = []
 
-    for lvl in levels:
-        mandatory = [s for s in by_level[lvl] if s.get("mandatory", True)]
-        optional = [s for s in by_level[lvl] if not s.get("mandatory", True)]
-        checks = mandatory + optional
-        if not checks:
-            continue
-
-        passed = 0
+    def score_signals(checks: list) -> tuple[float, float, list]:
+        passed = 0.0
         total = 0
-        failed_ids = []
+        failed_mandatory = []
         for sig in checks:
             sid = sig["id"]
             entry = (evidence.get("signals") or {}).get(sid) or {}
@@ -104,21 +105,44 @@ def dimension_level(signals: list, evidence: dict) -> dict:
             total += 1
             passed += w
             if w < 1.0 and sig.get("mandatory", True):
-                failed_ids.append(sid)
+                failed_mandatory.append(sid)
+        return passed, total, failed_mandatory
 
-        ratio = passed / total if total else 1.0
-        mandatory_ok = not failed_ids
-        if mandatory_ok and ratio >= 0.85:
+    for lvl in levels:
+        mandatory = [s for s in by_level[lvl] if s.get("mandatory", True)]
+        optional = [s for s in by_level[lvl] if not s.get("mandatory", True)]
+
+        if mandatory:
+            m_passed, m_total, failed_mandatory = score_signals(mandatory)
+            if failed_mandatory:
+                ratio = m_passed / m_total if m_total else 0.0
+                details.append({
+                    "level": lvl,
+                    "status": "fail",
+                    "ratio": round(ratio, 2),
+                    "failed_mandatory": failed_mandatory,
+                })
+                break
             achieved = max(achieved, lvl)
+            o_passed, o_total, _ = score_signals(optional)
+            total = m_total + o_total
+            passed = m_passed + o_passed
+            ratio = passed / total if total else 1.0
             details.append({"level": lvl, "status": "pass", "ratio": round(ratio, 2)})
-        else:
+        elif optional:
+            o_passed, o_total, _ = score_signals(optional)
+            ratio = o_passed / o_total if o_total else 1.0
+            if ratio >= 0.85:
+                achieved = max(achieved, lvl)
             details.append({
                 "level": lvl,
-                "status": "fail",
+                "status": "pass" if ratio >= 0.85 else "optional-incomplete",
                 "ratio": round(ratio, 2),
-                "failed_mandatory": failed_ids,
+                "failed_mandatory": [],
             })
-            break
+        else:
+            achieved = max(achieved, lvl)
+            details.append({"level": lvl, "status": "pass", "ratio": 1.0})
 
     return {"level": achieved, "details": details}
 

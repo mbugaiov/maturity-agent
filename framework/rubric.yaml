@@ -5,7 +5,8 @@
 # Scoring model:
 #   Each dimension has signals tagged with minimum_level (0-5).
 #   evidence.yaml answers: yes | partial | no | na
-#   Dimension level = highest L where ALL mandatory signals for that L are yes (partial counts as half)
+#   Dimension level = highest L where ALL mandatory signals for that L are yes (partial fails mandatory)
+#   Optional signals at a level inform ratio but do not block higher mandatory levels
 #   Post-adjustments: factory_loop may boost when armed loop + tick_gate (see scoring_adjustments)
 #   floor_level = min(all dimension levels) — shows strict gaps
 #   operational_level = min(factory-critical dimensions) — routine STG factory truth
@@ -206,7 +207,7 @@ dimensions:
         prompt: "Second product/repo successfully onboarded"
 
 level_headline_rules:
-  - condition: "factory_loop >= 5 AND qa_autonomy >= 5 AND dev_autonomy >= 5 AND deploy_verification >= 5 AND prod_human_gated == yes"
+  - condition: "factory_loop >= 5 AND qa_autonomy >= 5 AND dev_autonomy >= 5 AND deploy_verification >= 5 AND review_gate >= 5 AND prod_human_gated == yes"
     headline: "L5′ (L5 on STG)"
   - condition: "factory_loop >= 4 AND qa_autonomy >= 5 AND dev_autonomy >= 5 AND deploy_verification >= 5 AND review_gate >= 5 AND prod_human_gated == yes"
     headline: "L5′ (L5 on STG)"

@@ -63,6 +63,26 @@ class TestEffectiveSignalAnswer(unittest.TestCase):
         }
         self.assertEqual(score.effective_signal_answer(entry, "auto_merge"), "yes")
 
+    def test_per_repo_ci_without_product_falls_back_to_top_level(self):
+        entry = {
+            "answer": "no",
+            "per_repo": {"engine": "yes"},
+        }
+        self.assertEqual(
+            score.effective_signal_answer(entry, "blocking_review_ci"),
+            "no",
+        )
+
+    def test_per_repo_na_does_not_upgrade_to_yes(self):
+        entry = {
+            "answer": "no",
+            "per_repo": {"product": "no", "engine": "na"},
+        }
+        self.assertEqual(
+            score.effective_signal_answer(entry, "blocking_review_ci"),
+            "no",
+        )
+
     def test_per_repo_any_yes_for_non_ci_signal(self):
         entry = {"answer": "no", "per_repo": {"a": "partial", "b": "yes"}}
         self.assertEqual(score.effective_signal_answer(entry, "other_signal"), "yes")
@@ -84,6 +104,20 @@ class TestDimensionLevel(unittest.TestCase):
         result = score.dimension_level(signals, evidence)
         self.assertEqual(result["level"], 0)
 
+    def test_optional_only_level_does_not_block_higher_mandatory(self):
+        """dev_autonomy L4 is optional-only; L5 mandatory must still be evaluated."""
+        signals = [
+            {"id": "openspec_before_code", "min_level": 4, "mandatory": False},
+            {"id": "machine_dev_handoff", "min_level": 5, "mandatory": True},
+        ]
+        evidence = {
+            "signals": {
+                "machine_dev_handoff": {"answer": "yes"},
+            }
+        }
+        result = score.dimension_level(signals, evidence)
+        self.assertEqual(result["level"], 5)
+
 
 class TestHeadlineRules(unittest.TestCase):
     def test_l5_prime_rule_matches_partial_loop(self):
@@ -98,6 +132,19 @@ class TestHeadlineRules(unittest.TestCase):
         rubric = score.load_yaml(ROOT / "framework" / "rubric.yaml")
         headline = score.resolve_headline(rubric, dim_levels, evidence)
         self.assertEqual(headline["headline_hint"], "L5′ (L5 on STG)")
+
+    def test_l5_prime_rule_requires_review_gate(self):
+        dim_levels = {
+            "factory_loop": 5,
+            "qa_autonomy": 5,
+            "dev_autonomy": 5,
+            "deploy_verification": 5,
+            "review_gate": 4,
+        }
+        evidence = {"signals": {"prod_human_gated": {"answer": "yes"}}}
+        rubric = score.load_yaml(ROOT / "framework" / "rubric.yaml")
+        headline = score.resolve_headline(rubric, dim_levels, evidence)
+        self.assertNotEqual(headline["headline_hint"], "L5′ (L5 on STG)")
 
 
 class TestFactoryLoopAdjustment(unittest.TestCase):
@@ -174,6 +221,9 @@ class TestScoreAssessmentIntegration(unittest.TestCase):
         )
         self.assertEqual(blocking, "yes")
         self.assertEqual(auto, "yes")
+        dev = next(d for d in out["dimensions"] if d["id"] == "dev_autonomy")
+        self.assertGreaterEqual(dev["level"], 5)
+        self.assertGreaterEqual(out["operational_level"], 4)
 
     def test_boolean_yaml_answers_score(self):
         shutil.copy(FIXTURES / "bool-evidence.yaml", self.assess_dir / "evidence.yaml")
