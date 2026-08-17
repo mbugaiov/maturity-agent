@@ -75,6 +75,18 @@ maturity-agent/                 ← ENGINE
         assessment.md           ← working notes
         evidence.yaml           ← signal answers
         report.md               ← deliverable
+        score.json              ← machine score (local; often gitignored)
         presentation.html       ← slide deck (optional)
         presentation.md         ← speaker notes
+  exports/<slug>/latest.json    ← TRACKED snapshot for DO / Pantheon (export_scorecard.py)
 ```
+
+## Callable scores (factory hosts)
+
+Remote daemons (DigitalOcean) **must not** invent Shapiro levels. Prefer:
+
+1. `python3 scripts/latest_score.py --slug <slug>` when maturity-agent is checked out beside the factory
+2. Else fetch `exports/<slug>/latest.json` from this repo’s default branch
+3. Else open/continue a Metis refresh ticket — never patch product scorecards from guesses
+
+After any assessment change: `python3 scripts/export_scorecard.py --slug <slug>` and commit `exports/`.

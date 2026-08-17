@@ -18,13 +18,14 @@ try:
 except ImportError:
     yaml = None
 
-# Dimensions that define routine factory operation on the target environment.
+# Routine STG delivery loop — must stay aligned with L5′ headline rules in rubric.yaml.
+# defect_loop is floor / "what blocks next" only: auto-file bugs do not define whether
+# the factory can ship on STG (Pantheon L5′ with defect_loop L0 is valid).
 OPERATIONAL_DIMS = frozenset({
     "dev_autonomy",
     "review_gate",
     "deploy_verification",
     "qa_autonomy",
-    "defect_loop",
     "factory_loop",
 })
 
@@ -208,31 +209,41 @@ def eval_headline_condition(condition: str, dim_levels: dict[str, int], evidence
     return True
 
 
+def operational_level(dim_levels: dict[str, int]) -> int:
+    return min((dim_levels.get(d, 0) for d in OPERATIONAL_DIMS), default=0)
+
+
 def resolve_headline(rubric: dict, dim_levels: dict[str, int], evidence: dict) -> dict:
-    """Pick headline from level_headline_rules; return hint + matched rule."""
+    """Pick headline from level_headline_rules; return hint + matched rule.
+
+    L5 / L5′ rules require operational_level >= 4 so headline cannot claim STG
+    factory truth while the delivery-loop min is still broken (e.g. deploy L0).
+    """
+    op = operational_level(dim_levels)
+
     for rule in rubric.get("level_headline_rules") or []:
         if "condition" not in rule:
             continue
-        if eval_headline_condition(rule["condition"], dim_levels, evidence):
-            return {
-                "headline_hint": rule["headline"],
-                "headline_rule_matched": rule["condition"],
-            }
+        if not eval_headline_condition(rule["condition"], dim_levels, evidence):
+            continue
+        headline = rule["headline"]
+        if headline.startswith("L5") and op < 4:
+            continue
+        return {
+            "headline_hint": headline,
+            "headline_rule_matched": rule["condition"],
+        }
 
     fallback = next(
         (r.get("fallback") for r in rubric.get("level_headline_rules") or [] if "fallback" in r),
         None,
     )
-    operational = min(
-        (dim_levels.get(d, 0) for d in OPERATIONAL_DIMS),
-        default=0,
-    )
     weighted_floor = min(dim_levels.values()) if dim_levels else 0
 
-    if operational >= 5:
+    if op >= 5:
         hint = "L5′ (L5 on STG)" if signal_answer(evidence, "prod_human_gated") == "yes" else "L5"
-    elif operational >= 4:
-        hint = f"L{operational} (operational)"
+    elif op >= 4:
+        hint = f"L{op} (operational)"
     else:
         hint = f"L{weighted_floor} (floor)"
 
@@ -294,10 +305,7 @@ def main() -> int:
         if weights
         else 0
     )
-    operational = min(
-        (dim_levels.get(d, 0) for d in OPERATIONAL_DIMS),
-        default=0,
-    )
+    operational = operational_level(dim_levels)
 
     headline = resolve_headline(rubric, dim_levels, evidence)
 
