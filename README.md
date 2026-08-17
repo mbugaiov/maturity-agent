@@ -43,14 +43,28 @@ scripts/new_assessment.sh <slug> "<scope>"
    python3 scripts/score_assessment.py projects/acme/assessments/<date>-baseline
    ```
 
-   `score.json` (rubric v1.1) exposes:
+   `score.json` (rubric **v1.2**) exposes:
    - **`headline_hint`** — use in `report.md` (from `level_headline_rules`)
-   - **`operational_level`** — factory truth on STG
+   - **`operational_level`** — factory truth on STG (delivery-loop min; not `defect_loop`)
    - **`floor_level`** — strict min for gap narrative only
 
    Helper scripts for discovery: `scripts/collect_ci_signals.sh <repo>`, `scripts/verify_factory_manifest.sh <MANIFEST.md>`.
 
-6. **Build presentation** (after report):
+6. **Callable scores for factories (DigitalOcean / Pantheon)** — assessments under
+   `projects/` stay local/gitignored; publish a tracked snapshot:
+
+   ```bash
+   python3 scripts/latest_score.py --slug pantheon-qa          # read local score.json
+   python3 scripts/export_scorecard.py --slug pantheon-qa      # → exports/<slug>/latest.json
+   ```
+
+   Remote hosts pull:
+
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/<org>/maturity-agent/<branch>/exports/<slug>/latest.json
+   ```
+
+7. **Build presentation** (after report):
 
    ```bash
    python3 scripts/build_presentation.py projects/acme/assessments/<date>-baseline

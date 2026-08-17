@@ -144,6 +144,24 @@ else
     fail "score_assessment.py"
   fi
 
+  # Callable Metis CLI (latest_score / export) — fixture slug in isolated tree
+  mkdir -p projects/cli-demo/assessments/2026-08-16-demo
+  cp "$RUN_DIR/score.json" projects/cli-demo/assessments/2026-08-16-demo/score.json
+  echo "active_assessment: assessments/2026-08-16-demo" > projects/cli-demo/project-memory.md
+  if python3 scripts/latest_score.py --slug cli-demo >/tmp/latest_score_out.json 2>/dev/null; then
+    ok "latest_score.py"
+    python3 -c "import json; d=json.load(open('/tmp/latest_score_out.json')); assert d['slug']=='cli-demo' and 'operational_level' in d"
+    ok "latest_score.py json"
+  else
+    fail "latest_score.py"
+  fi
+  if python3 scripts/export_scorecard.py --slug cli-demo >/dev/null 2>&1; then
+    ok "export_scorecard.py"
+    [[ -f exports/cli-demo/latest.json ]] && ok "exports/cli-demo/latest.json" || fail "exports/cli-demo/latest.json"
+  else
+    fail "export_scorecard.py"
+  fi
+
   if python3 scripts/build_presentation.py "$RUN_DIR" --title "Test Proj" >/dev/null 2>&1; then
     ok "build_presentation.py"
     [[ -f "$RUN_DIR/presentation.html" ]] && ok "presentation.html" || fail "presentation.html"

@@ -1,0 +1,26 @@
+{
+  "slug": "pantheon-qa",
+  "assessmentId": "2026-08-16-defect-l5",
+  "assessedOn": "2026-08-16",
+  "headline_hint": "L5\u2032 (L5 on STG)",
+  "weighted_level": 4.79,
+  "operational_level": 4,
+  "floor_level": 4,
+  "version": "1.2",
+  "dimensions": {
+    "intent_spec": 4,
+    "agent_topology": 5,
+    "dev_autonomy": 5,
+    "review_gate": 5,
+    "deploy_verification": 5,
+    "qa_autonomy": 5,
+    "defect_loop": 5,
+    "provenance": 5,
+    "human_boundaries": 5,
+    "factory_loop": 4,
+    "portability": 5
+  },
+  "exportedAt": "2026-08-17T00:50:01Z",
+  "source": "maturity-agent",
+  "note": "Tracked export for factory consumers (DigitalOcean / Pantheon). Local assessments under projects/ remain gitignored."
+}

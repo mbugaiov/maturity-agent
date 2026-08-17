@@ -59,10 +59,13 @@ Use **two scores** from `score.json` — they answer different questions:
 | **operational_level** | Does the factory run on the target env (STG)? | **Headline level** |
 | **floor_level** | What is the strict minimum across all dimensions? | **Gaps / blockers** |
 
+**Operational set (v1.2):** `dev_autonomy`, `review_gate`, `deploy_verification`, `qa_autonomy`, `factory_loop`.  
+`defect_loop` is **not** in the operational min — missing auto-file bugs floors the scorecard and blocks “next,” but does not zero STG factory truth (aligns with L5′ headline rules).
+
 1. Find the **highest level where routine delivery works without human intervention** on the target environment → `operational_level`.
 2. If humans still **must** click Accept/Merge/Deploy for every ticket → cap at **L3–L4**.
-3. If only **intent + exceptions** are human → **L5′** or **L5** (see `level_headline_rules` in `rubric.yaml`).
-4. **Do not** use `floor_level` as the headline when `operational_level` is higher — explain the delta in a **Reconciliation** section (e.g. armed loop = partial `scheduled_ticks` but factory still runs).
+3. If only **intent + exceptions** are human → **L5′** or **L5** (see `level_headline_rules` in `rubric.yaml`). L5/L5′ headlines require `operational_level >= 4`.
+4. **Do not** use `floor_level` as the headline when `operational_level` is higher — explain the delta in a **Reconciliation** section (e.g. armed loop = partial `scheduled_ticks` but factory still runs; or Pantheon `defect_loop` L0 with operational L4).
 5. Report as **headline** + **direction** + **% factory complete** when useful.
 
 ### L5′ operational vs strict L5

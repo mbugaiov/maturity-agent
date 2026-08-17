@@ -146,6 +146,48 @@ class TestHeadlineRules(unittest.TestCase):
         headline = score.resolve_headline(rubric, dim_levels, evidence)
         self.assertNotEqual(headline["headline_hint"], "L5′ (L5 on STG)")
 
+    def test_l5_prime_rejected_when_operational_below_4(self):
+        """Deploy L0 zeros operational — must not keep an L5′ headline."""
+        dim_levels = {
+            "factory_loop": 4,
+            "qa_autonomy": 5,
+            "dev_autonomy": 5,
+            "deploy_verification": 0,
+            "review_gate": 5,
+            "agent_topology": 5,
+            "intent_spec": 4,
+        }
+        evidence = {"signals": {"prod_human_gated": {"answer": "yes"}}}
+        rubric = score.load_yaml(ROOT / "framework" / "rubric.yaml")
+        headline = score.resolve_headline(rubric, dim_levels, evidence)
+        self.assertNotEqual(headline["headline_hint"], "L5′ (L5 on STG)")
+        self.assertEqual(headline["headline_hint"], "L4 (engineering team)")
+
+
+class TestOperationalDims(unittest.TestCase):
+    def test_defect_loop_not_in_operational_set(self):
+        self.assertNotIn("defect_loop", score.OPERATIONAL_DIMS)
+
+    def test_defect_loop_l0_does_not_zero_operational(self):
+        dim_levels = {
+            "dev_autonomy": 5,
+            "review_gate": 5,
+            "deploy_verification": 5,
+            "qa_autonomy": 5,
+            "factory_loop": 4,
+            "defect_loop": 0,
+            "intent_spec": 4,
+            "agent_topology": 5,
+            "provenance": 5,
+            "human_boundaries": 5,
+            "portability": 5,
+        }
+        self.assertEqual(score.operational_level(dim_levels), 4)
+        evidence = {"signals": {"prod_human_gated": {"answer": "yes"}}}
+        rubric = score.load_yaml(ROOT / "framework" / "rubric.yaml")
+        headline = score.resolve_headline(rubric, dim_levels, evidence)
+        self.assertEqual(headline["headline_hint"], "L5′ (L5 on STG)")
+
 
 class TestFactoryLoopAdjustment(unittest.TestCase):
     def test_partial_scheduled_ticks_boosts_factory_loop(self):

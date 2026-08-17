@@ -149,7 +149,7 @@ Use only to sanity-check the rubric — **never** as default evidence for a real
 | review_gate | blocking review fails pipeline | L5′ |
 | deploy_verification | buildId gate on staging | L5′ |
 | qa_autonomy | auto-accept when machine DoD met | L5′ |
-| defect_loop | auto-file confirmed bugs | L5′ |
+| defect_loop | auto-file confirmed bugs | L5′ (floor / next-step; not in operational min) |
 | provenance | JSONL or equivalent factory ledger | L5′ |
 | human_boundaries | needs-human policy; PROD gated | L4 (blocks full L5) |
 | factory_loop | scheduled dev + QA ticks | L5′ |

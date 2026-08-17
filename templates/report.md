@@ -77,7 +77,7 @@
 | portability | | | |
 
 **Floor level (min dimension):**  
-**Operational level (factory-critical min):**  
+**Operational level (delivery-loop min):**  
 **Weighted level (score.json):**  
 **Headline rule matched:**  
 
@@ -122,4 +122,4 @@
 
 - Full evidence: `evidence.yaml`
 - Machine scores: `score.json`
-- Rubric version: `framework/rubric.yaml` v1.1
+- Rubric version: `framework/rubric.yaml` v1.2

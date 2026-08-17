@@ -50,10 +50,17 @@ Compare to previous `report.md` in `project-memory.md`:
 
 Use the **fictional** table in `framework/signals.md` only to validate rubric mechanics — never as evidence for a real project.
 
-## Scoring reference (v1.1)
+## Scoring reference (v1.2)
 
 | Metric | Meaning |
 |--------|---------|
-| `floor_level` | Strict min — gap narrative |
-| `operational_level` | Factory-critical min — STG truth |
-| `headline_hint` | From `level_headline_rules` — use in report |
+| `floor_level` | Strict min — gap narrative (includes `defect_loop`) |
+| `operational_level` | Delivery-loop min — STG truth (`dev`/`review`/`deploy`/`qa`/`factory_loop`; not `defect_loop`) |
+| `headline_hint` | From `level_headline_rules` (L5/L5′ need operational ≥ 4) — use in report |
+
+After scoring, publish for factory hosts:
+
+```bash
+python3 scripts/export_scorecard.py --slug <slug>
+# → exports/<slug>/latest.json (commit this; projects/ assessments stay local)
+```
