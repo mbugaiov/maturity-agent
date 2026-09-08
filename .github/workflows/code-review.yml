@@ -73,15 +73,10 @@ jobs:
             --local-rule .cursor/rules/code-review-gate.mdc \
             --agents AGENTS.md \
             --themis-root .themis-agent)"
-          # Pin composer-2.5 — team disabled Cursor Router Optimize For; default auto fails in CI.
+          # Pin composer-2.5 only — no fast fallback (cost). Optimize For disabled for team.
           set +e
           cursor-agent --force --api-key "$CURSOR_API_KEY" --model composer-2.5 --output-format text -p "$PROMPT" > review.md 2> review.err
           AGENT_EC=$?
-          if [[ "$AGENT_EC" -ne 0 ]] && grep -qiE 'Optimize For|permission_denied' review.err; then
-            echo "WARN: Optimize-For flake — retry composer-2.5-fast" >&2
-            cursor-agent --force --api-key "$CURSOR_API_KEY" --model composer-2.5-fast --output-format text -p "$PROMPT" > review.md 2> review.err
-            AGENT_EC=$?
-          fi
           set -e
           [[ -s review.err ]] && { echo "----- Themis stderr -----"; cat review.err; }
           [[ -s review.md ]] || echo "Cursor review produced no output (see build log above)." > review.md
