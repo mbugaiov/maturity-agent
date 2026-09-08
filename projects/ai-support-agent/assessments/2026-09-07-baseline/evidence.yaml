@@ -1,0 +1,148 @@
+meta:
+  project: ai-support-agent
+  assessment: "2026-09-07-baseline"
+  date: "2026-09-07"
+  assessor: maturity-agent
+  factory_manifest: "Jira epic RQ-2222 + qa-agent/projects/ai-support-agent/project-memory.md coverage ledger"
+  ci_product: "solark/ai-support-agent/bitbucket-pipelines.yml"
+  ci_engine: "dev-agent/.github/workflows/code-review.yml; qa-agent/.github/workflows/code-review.yml"
+  loop_cadence: "300s Kairos portfolio (Hephaestus); QA on-demand/oneshot drains"
+  loop_arm_method: "kairos-agent/config/portfolio.yaml slug ai-support-agent enabled; Argus oneshot + factory_tick_gate.sh"
+  prior_headline: "none (Pantheon /metis pendingAssessment placeholder)"
+
+signals:
+  human_writes_tickets:
+    answer: yes
+    citation: "Jira project RQ epic RQ-2222; humans groom labels impl-dev/ba-spec-first/impl-ux; board_id 151 in dev-agent project.yaml"
+
+  structured_acceptance:
+    answer: yes
+    citation: "OpenSpec openspec/changes/* + ticket AC; Argus TC-RQ-* + acceptance-smoke; RQ-2383 dod_check openspec_read=true"
+
+  openspec_or_prd:
+    answer: yes
+    citation: "solark/ai-support-agent/openspec/specs + openspec/changes (rq-2223…); PROJECT.md product brief; ba-agent openspec_specs_dir"
+
+  agents_do_not_invent_scope:
+    answer: yes
+    citation: "ba-agent ba_factory pickup impl-ba + BA_SPEC_READY; ux needs-ux-pass; dev excluded_labels human-required/factory-pause/needs-human; factory refuses Done from Hephaestus (forbidden_target_statuses)"
+
+  multiple_roles:
+    answer: yes
+    citation: "Hephaestus+Hermes+Athena+Argus+Themis — seat project.yaml under each *-agent/projects/ai-support-agent/"
+
+  written_role_boundaries:
+    answer: yes
+    citation: "Product AGENTS.md; bitbucket-pipelines.yml review/isolation PR-only; dev handoff_status Validate/Testing; Argus factory/schema.md DoD"
+
+  cr_does_not_pick_tickets:
+    answer: yes
+    citation: "Themis only in BB review (Themis) + isolation steps; no Jira pickup in themis path"
+
+  agent_opens_pr:
+    answer: yes
+    citation: "dev-agent mr_push_command → scripts/mr_push.sh; Bitbucket PRs e.g. PR#34 for RQ-2383"
+
+  openspec_before_code:
+    answer: yes
+    citation: "app.openspec_enabled true; openspec/changes seeded; Hermes ba-spec-first before impl-dev"
+
+  machine_dev_handoff:
+    answer: yes
+    citation: "Argus handoff_read with buildId+PR+pipeline; Validate/Testing transition; RQ-2383.jsonl handoff_read event"
+
+  auto_merge:
+    answer: yes
+    per_repo:
+      product: yes
+      engine: partial
+    citation: "bitbucket-pipelines.yml Auto-merge when green + scripts/auto_merge_pr.sh after check_review_gate + Themis follow-up dispose"
+
+  review_agent_exists:
+    answer: yes
+    citation: "bitbucket-pipelines.yml review (Themis) + isolation (Themis); THEMIS_CURSOR_MODEL default composer-2.5"
+
+  blocking_review_ci:
+    answer: yes
+    per_repo:
+      product: yes
+      engine: yes
+    citation: "product: scripts/check_review_gate.sh after review.md (fail closed); isolation ci_isolation.sh --mode product"
+
+  auto_deploy_nonprod:
+    answer: yes
+    per_repo:
+      product: yes
+      engine: na
+    citation: "pipelines Deploy to AWS EC2 (STG) on main via scripts/ci_deploy_stg.sh; docker-compose on qa-max-agents"
+
+  buildid_gate:
+    answer: yes
+    per_repo:
+      product: yes
+      engine: yes
+    citation: "STG GET /health git_sha/build; RQ-2383 dod_check buildid_gate=MATCH ba000f35b07b; live health 2026-09-07 returned ba000f35b07b"
+
+  qa_agent_or_unattended_tests:
+    answer: yes
+    citation: "Argus qa-agent/projects/ai-support-agent; acceptance-smoke + TC suite; factory/runs RQ-2224…RQ-2383.jsonl"
+
+  two_pass_or_equivalent:
+    answer: yes
+    citation: "RQ-2383 dod_check two_pass=true + verdict_review=pass; schema requires two_pass for DONE"
+
+  auto_accept_done:
+    answer: yes
+    citation: "RQ-2383 transition to Done after dod_check DONE without human click; multiple Done rows in project-memory Run history"
+
+  auto_file_confirmed_bugs:
+    answer: no
+    citation: "create_bug_issue.py + factory schema bug_filed exist, but no bug_filed event in ai-support factory/runs/*.jsonl (0 bugs in Run history) — unproven for this slug"
+
+  regression_reopen:
+    answer: no
+    citation: "No auto-reopen trace in ai-support ledger; capability documented as L5 optional in QA memory only"
+
+  jira_handoff_comments:
+    answer: yes
+    citation: "handoff_read detail includes PR URL + buildId + pipeline; Jira Validate/Testing comments via factory handoff scripts"
+
+  factory_ledger:
+    answer: yes
+    citation: "qa-agent/projects/ai-support-agent/factory/runs/*.jsonl (20+ tickets) + _loop.jsonl; dod_check/verdict_review events"
+
+  humans_own_intent:
+    answer: yes
+    citation: "Humans author Jira RQ epic/children; factory implements labeled scope only"
+
+  needs_human_policy:
+    answer: yes
+    citation: "dev_factory excluded_labels: human-required, factory-pause, needs-human; Argus needs-human verdict path in factory/schema.md"
+
+  prod_human_gated:
+    answer: yes
+    citation: "Factory deploy path is AWS STG only (docs/DEPLOYMENT.md / pipelines deploy-stg); no PROD auto-deploy in scope"
+
+  scheduled_ticks:
+    answer: partial
+    citation: "kairos-agent portfolio ai-support-agent enabled interval_sec 300; Hephaestus loop configured — QA drains often oneshot/session rather than proven unattended cron"
+
+  tick_gate:
+    answer: yes
+    citation: "factory_tick_gate.sh ai-support-agent required before tick_end; dod_check + verdict_review=pass enforced (schema + memory DoD)"
+
+  factory_backlog_complete:
+    answer: yes
+    citation: "Bootstrap program RQ-2223…RQ-2233 Done; follow-on STG/UX/Themis tickets through RQ-2383 Done with drained backlog notes in QA memory"
+
+  project_template:
+    answer: yes
+    citation: "Seat projects from *-agent/projects/_template via new_project.sh; maturity projects/_template used for this Metis scaffold"
+
+  slug_parameterized_scripts:
+    answer: yes
+    citation: "pickup/qa_scope/factory_tick_gate take slug ai-support-agent; Kairos/Theia allowlist by slug"
+
+  second_product_proof:
+    answer: yes
+    citation: "Shared engines already run LRM + Pantheon; ai-support is additional Bitbucket+Jira product on same seat templates"

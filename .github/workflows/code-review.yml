@@ -1,0 +1,139 @@
+name: Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [master, main]
+
+jobs:
+  review:
+    name: review (Themis)
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache Cursor CLI
+        id: cache-cursor
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/bin
+            ~/.local/share/cursor-agent
+            ~/.cursor
+          key: cursor-cli-${{ runner.os }}-v5
+      - name: Install Cursor CLI
+        run: |
+          if [[ "${{ steps.cache-cursor.outputs.cache-hit }}" == "true" ]] && command -v cursor-agent >/dev/null 2>&1; then
+            echo "cursor-agent ready (cache)"
+            exit 0
+          fi
+          curl -fsSL https://cursor.com/install | bash
+      - name: Add Cursor CLI to PATH
+        run: |
+          echo "$HOME/.cursor/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - uses: actions/checkout@v4
+        with:
+          repository: mbugaiov/themis-agent
+          # Unpinned = review-rules pack floats on themis main
+          path: .themis-agent
+
+      - name: Run Cursor code review
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          BASE: ${{ github.base_ref }}
+        run: |
+          if [[ -z "${CURSOR_API_KEY:-}" ]]; then
+            cat > review.md <<'EOF'
+          ## Summary
+          Automated review skipped — `CURSOR_API_KEY` repository secret is not configured.
+
+          ## Blocking issues
+          Configure `CURSOR_API_KEY` under Settings → Secrets and variables → Actions to enable PR code review.
+
+          ## Suggestions
+          None.
+          EOF
+            exit 0
+          fi
+          git fetch origin "${BASE}" --quiet || true
+          PROMPT="$(bash .themis-agent/scripts/build_review_prompt.sh \
+            --pr "${{ github.event.pull_request.number }}" \
+            --base "origin/${BASE}" \
+            --label "${{ github.event.repository.name }}" \
+            --local-rule .cursor/rules/code-review-gate.mdc \
+            --agents AGENTS.md \
+            --themis-root .themis-agent)"
+          # Pin composer-2.5 — team disabled Cursor Router Optimize For; default auto fails in CI.
+          set +e
+          cursor-agent --force --api-key "$CURSOR_API_KEY" --model composer-2.5 --output-format text -p "$PROMPT" > review.md 2> review.err
+          AGENT_EC=$?
+          if [[ "$AGENT_EC" -ne 0 ]] && grep -qiE 'Optimize For|permission_denied' review.err; then
+            echo "WARN: Optimize-For flake — retry composer-2.5-fast" >&2
+            cursor-agent --force --api-key "$CURSOR_API_KEY" --model composer-2.5-fast --output-format text -p "$PROMPT" > review.md 2> review.err
+            AGENT_EC=$?
+          fi
+          set -e
+          [[ -s review.err ]] && { echo "----- Themis stderr -----"; cat review.err; }
+          [[ -s review.md ]] || echo "Cursor review produced no output (see build log above)." > review.md
+          if [[ "$AGENT_EC" -ne 0 ]] && grep -q 'Cursor review produced no output' review.md; then
+            echo "Themis agent exited $AGENT_EC with empty review." >&2
+            exit 1
+          fi
+          cat review.md
+
+      - name: Blocking review gate
+        run: bash .themis-agent/scripts/check_review_gate.sh review.md
+
+      - name: Upload review artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: review-md
+          path: review.md
+          retention-days: 7
+
+      - name: Post review comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let body = '';
+            try {
+              body = fs.readFileSync('review.md', 'utf8');
+            } catch (e) {
+              body = '_Review output unavailable._';
+            }
+            const marker = '<!-- maturity-agent-themis-review -->';
+            const full = `${marker}\n## Themis automated review\n\n${body}`;
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100,
+            });
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body: full,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: full,
+              });
+            }

@@ -50,6 +50,14 @@ done
 [[ -f rules/code-review-gate.md ]] && ok "rules/code-review-gate.md" || fail "rules/code-review-gate.md"
 [[ -f CONTRIBUTING.md ]] && ok "CONTRIBUTING.md" || fail "CONTRIBUTING.md"
 [[ -f .github/pull_request_template.md ]] && ok "pull_request_template.md" || fail "pull_request_template.md"
+WF_REVIEW=".github/workflows/code-review.yml"
+if [[ -f "$WF_REVIEW" ]] \
+  && grep -q -- '--model composer-2.5' "$WF_REVIEW" \
+  && grep -q 'Optimize For' "$WF_REVIEW"; then
+  ok "review pins composer-2.5 (Optimize-For workaround)"
+else
+  fail "review must pin composer-2.5 with Optimize-For retry"
+fi
 [[ -f .cursor/rules/maturity-engine.mdc ]] && ok "maturity-engine.mdc" || fail "maturity-engine.mdc"
 [[ -f .cursor/rules/code-review-gate.mdc ]] && ok "code-review-gate.mdc" || fail "code-review-gate.mdc"
 [[ -f CLAUDE.md ]] && ok "CLAUDE.md" || fail "CLAUDE.md"
