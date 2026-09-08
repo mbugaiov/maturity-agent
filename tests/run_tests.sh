@@ -22,6 +22,11 @@ done
 for tpl in intake.md assessment.md evidence.yaml report.md gap-backlog.md presentation.md; do
   [[ -f "templates/$tpl" ]] && ok "template $tpl" || fail "template $tpl"
 done
+if python3 scripts/project_memory.py --check >/dev/null 2>&1; then
+  ok "configured yaml slugs require project memory"
+else
+  fail "configured yaml slugs require project memory"
+fi
 
 # --- Skills (canonical + adapters) ---
 for s in maturity-assess maturity-interview maturity-report maturity-presentation maturity-code-review; do
@@ -110,6 +115,7 @@ else
 fi
 [[ -f projects/testproj/intake.md ]] && ok "intake.md created" || fail "intake.md created"
 [[ -f projects/testproj/project.yaml ]] && ok "project.yaml created" || fail "project.yaml created"
+[[ -s projects/testproj/project-memory.md ]] && ok "project-memory.md created" || fail "project-memory.md created"
 
 if ./scripts/new_assessment.sh testproj baseline >/dev/null 2>&1; then
   ok "new_assessment.sh"

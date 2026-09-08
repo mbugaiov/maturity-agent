@@ -20,6 +20,10 @@ active_assessment: null
 |------|-------|-------|--------|
 | | | | |
 
+## Run history
+
+<!-- export_scorecard.py appends: date | assessment id | headline + weighted level | artifact -->
+
 ## Recurring gaps
 
 - 

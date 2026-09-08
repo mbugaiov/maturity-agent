@@ -33,7 +33,7 @@ One project = one target system; one assessment = one dated folder under `assess
 7. Gaps      → top blockers to next level with concrete next tickets / rule changes
 8. Report    → assessments/<run>/report.md from templates/report.md
 9. Present   → maturity-presentation: build_presentation.py → presentation.html
-10. Memory   → update projects/<slug>/project-memory.md (last level, trend, open gaps)
+10. Export   → export_scorecard.py; gate requires project-memory.md and appends date + assessment id + headline/weighted result + artifact
 ```
 
 ## Hard rules
@@ -44,6 +44,7 @@ One project = one target system; one assessment = one dated folder under `assess
 - **L5 is rare** — full dark factory requires zero human in the loop for routine work; call out what humans still own.
 - **Distinguish L5′ (factory on STG)** from full L5 (PROD, multi-product, zero escalation) — see `framework/shapiro-levels.md`.
 - **Per-project isolation** — only read `projects/<slug>/`; never mix another project's intake.
+- **Project memory is terminal DoD** — every real YAML slug needs a non-empty `project-memory.md` (`python3 scripts/project_memory.py --bootstrap`). A score is not published until `export_scorecard.py` appends its honest assessment/export row under `## Run history`.
 - Never commit secrets — links and redacted excerpts only.
 
 ## Engine maintenance (contributors)
