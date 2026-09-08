@@ -53,10 +53,10 @@ done
 WF_REVIEW=".github/workflows/code-review.yml"
 if [[ -f "$WF_REVIEW" ]] \
   && grep -q -- '--model composer-2.5' "$WF_REVIEW" \
-  && grep -q 'Optimize For' "$WF_REVIEW"; then
-  ok "review pins composer-2.5 (Optimize-For workaround)"
+  && ! grep -q 'composer-2.5-fast' "$WF_REVIEW"; then
+  ok "review pins composer-2.5 only (no fast)"
 else
-  fail "review must pin composer-2.5 with Optimize-For retry"
+  fail "review must pin composer-2.5 and must not use composer-2.5-fast"
 fi
 [[ -f .cursor/rules/maturity-engine.mdc ]] && ok "maturity-engine.mdc" || fail "maturity-engine.mdc"
 [[ -f .cursor/rules/code-review-gate.mdc ]] && ok "code-review-gate.mdc" || fail "code-review-gate.mdc"
