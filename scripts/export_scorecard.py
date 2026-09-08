@@ -21,6 +21,7 @@ ROOT = Path(__file__).resolve().parent.parent
 # Reuse latest_score helpers
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from latest_score import resolve_assessment_dir, scorecard_slice  # noqa: E402
+from project_memory import append_export, valid_memory  # noqa: E402
 
 
 def main() -> int:
@@ -36,6 +37,10 @@ def main() -> int:
     if not proj.is_dir():
         print(f"Unknown slug: {args.slug}", file=sys.stderr)
         return 1
+    memory = proj / "project-memory.md"
+    if not valid_memory(memory):
+        print(f"Missing or empty project memory: {memory}", file=sys.stderr)
+        return 3
 
     if args.assessment:
         assess_dir = proj / "assessments" / args.assessment
@@ -97,7 +102,15 @@ curl -fsSL https://raw.githubusercontent.com/<org>/maturity-agent/<branch>/expor
         encoding="utf-8",
     )
 
+    append_export(
+        proj,
+        str(payload.get("assessmentId") or ""),
+        str(payload.get("headline_hint") or ""),
+        payload.get("weighted_level", ""),
+        str(out_path.relative_to(ROOT)),
+    )
     print(str(out_path))
+    print(f"memory_updated=true project={args.slug}")
     return 0
 
 

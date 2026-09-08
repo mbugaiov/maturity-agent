@@ -88,7 +88,7 @@ class TestExportScorecardCli(unittest.TestCase):
         )
         scripts = root / "scripts"
         scripts.mkdir()
-        for name in ("latest_score.py", "export_scorecard.py"):
+        for name in ("latest_score.py", "project_memory.py", "export_scorecard.py"):
             shutil.copy(ROOT / "scripts" / name, scripts / name)
 
         orig_argv = sys.argv
@@ -110,6 +110,50 @@ class TestExportScorecardCli(unittest.TestCase):
         self.assertEqual(data["dimensions"]["defect_loop"], 5)
         self.assertNotIn("score_path", data)
         self.assertTrue((root / "exports" / slug / "latest.md").is_file())
+        memory = (root / "projects" / slug / "project-memory.md").read_text()
+        self.assertIn("## Run history", memory)
+        self.assertIn("2026-08-16-demo", memory)
+        self.assertIn("weighted 4.79", memory)
+
+    def test_export_fails_without_project_memory(self):
+        tmp = tempfile.mkdtemp(prefix="maturity-export-no-memory-")
+        self.addCleanup(lambda: shutil.rmtree(tmp, ignore_errors=True))
+        root = Path(tmp)
+        slug = "demo"
+        assess = root / "projects" / slug / "assessments" / "2026-08-16-demo"
+        assess.mkdir(parents=True)
+        (assess / "score.json").write_text(
+            json.dumps(
+                {
+                    "headline_hint": "L4",
+                    "weighted_level": 4,
+                    "operational_level": 4,
+                    "floor_level": 4,
+                    "dimensions": [],
+                }
+            )
+        )
+        scripts = root / "scripts"
+        scripts.mkdir()
+        for name in ("latest_score.py", "project_memory.py", "export_scorecard.py"):
+            shutil.copy(ROOT / "scripts" / name, scripts / name)
+        import subprocess
+
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(scripts / "export_scorecard.py"),
+                "--slug",
+                slug,
+                "--assessment",
+                assess.name,
+            ],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 3)
+        self.assertIn("project memory", result.stderr.lower())
+        self.assertFalse((root / "exports" / slug / "latest.json").exists())
 
 
 if __name__ == "__main__":

@@ -26,8 +26,11 @@ description: Run a Dan Shapiro maturity assessment on a target project. Use when
 6. Run `python3 scripts/score_assessment.py projects/<slug>/assessments/<run>`
 7. Verify `score.json` has `operational_level`, `headline_hint`, `headline_rule_matched`
 8. Run **maturity-report** skill — write `report.md` (reconciliation if operational ≠ floor)
-9. Update `project-memory.md` with headline level + trend
-10. Optional: run **maturity-presentation** → `presentation.html`
+9. Run `python3 scripts/export_scorecard.py --slug <slug>`. This is the terminal
+   gate: it refuses missing/empty project memory and appends date + assessment id
+   + headline/weighted result + export artifact under `## Run history`.
+10. Update the other `project-memory.md` summary fields (last level, trend, gaps)
+11. Optional: run **maturity-presentation** → `presentation.html`
 
 ## Output checklist
 
@@ -37,7 +40,7 @@ description: Run a Dan Shapiro maturity assessment on a target project. Use when
 - [ ] `report.md` — headline from `headline_hint`; reconciliation if needed
 - [ ] `report.md` — factory MANIFEST table if program exists
 - [ ] `presentation.html` — if user wants slides (skill `maturity-presentation`)
-- [ ] `project-memory.md` — last assessment pointer updated
+- [ ] `project-memory.md` — last assessment pointer updated and export Run history row appended
 
 ## Re-assessment
 
