@@ -1,0 +1,219 @@
+{
+  "framework": "dan-shapiro",
+  "version": "1.2",
+  "floor_level": 0,
+  "operational_level": 4,
+  "weighted_level": 4.42,
+  "dimensions": [
+    {
+      "id": "intent_spec",
+      "name": "Intent & specification",
+      "level": 4,
+      "weight": 1.2,
+      "details": [
+        {
+          "level": 4,
+          "status": "pass",
+          "ratio": 0.83
+        },
+        {
+          "level": 5,
+          "status": "fail",
+          "ratio": 0.5,
+          "failed_mandatory": [
+            "agents_do_not_invent_scope"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "agent_topology",
+      "name": "Agent topology",
+      "level": 5,
+      "weight": 1.0,
+      "details": [
+        {
+          "level": 4,
+          "status": "pass",
+          "ratio": 1.0
+        },
+        {
+          "level": 5,
+          "status": "pass",
+          "ratio": 1.0,
+          "failed_mandatory": []
+        }
+      ]
+    },
+    {
+      "id": "dev_autonomy",
+      "name": "Development autonomy",
+      "level": 5,
+      "weight": 1.0,
+      "details": [
+        {
+          "level": 3,
+          "status": "pass",
+          "ratio": 1.0
+        },
+        {
+          "level": 4,
+          "status": "optional-incomplete",
+          "ratio": 0.5,
+          "failed_mandatory": []
+        },
+        {
+          "level": 5,
+          "status": "pass",
+          "ratio": 0.5
+        }
+      ]
+    },
+    {
+      "id": "review_gate",
+      "name": "Code review gate",
+      "level": 5,
+      "weight": 0.9,
+      "details": [
+        {
+          "level": 4,
+          "status": "pass",
+          "ratio": 1.0
+        },
+        {
+          "level": 5,
+          "status": "pass",
+          "ratio": 1.0
+        }
+      ]
+    },
+    {
+      "id": "deploy_verification",
+      "name": "Deploy verification",
+      "level": 5,
+      "weight": 1.1,
+      "details": [
+        {
+          "level": 4,
+          "status": "pass",
+          "ratio": 1.0
+        },
+        {
+          "level": 5,
+          "status": "pass",
+          "ratio": 1.0
+        }
+      ]
+    },
+    {
+      "id": "qa_autonomy",
+      "name": "QA autonomy",
+      "level": 5,
+      "weight": 1.2,
+      "details": [
+        {
+          "level": 4,
+          "status": "pass",
+          "ratio": 1.0
+        },
+        {
+          "level": 5,
+          "status": "pass",
+          "ratio": 1.0
+        }
+      ]
+    },
+    {
+      "id": "defect_loop",
+      "name": "Defect loop",
+      "level": 0,
+      "weight": 0.8,
+      "details": [
+        {
+          "level": 5,
+          "status": "fail",
+          "ratio": 0.0,
+          "failed_mandatory": [
+            "auto_file_confirmed_bugs"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "provenance",
+      "name": "Provenance & audit",
+      "level": 5,
+      "weight": 0.8,
+      "details": [
+        {
+          "level": 4,
+          "status": "pass",
+          "ratio": 1.0
+        },
+        {
+          "level": 5,
+          "status": "pass",
+          "ratio": 1.0,
+          "failed_mandatory": []
+        }
+      ]
+    },
+    {
+      "id": "human_boundaries",
+      "name": "Human boundaries",
+      "level": 5,
+      "weight": 1.0,
+      "details": [
+        {
+          "level": 4,
+          "status": "pass",
+          "ratio": 1.0
+        },
+        {
+          "level": 5,
+          "status": "pass",
+          "ratio": 1.0
+        }
+      ]
+    },
+    {
+      "id": "factory_loop",
+      "name": "Factory loop",
+      "level": 4,
+      "weight": 1.0,
+      "details": [
+        {
+          "level": 5,
+          "status": "fail",
+          "ratio": 0.5,
+          "failed_mandatory": [
+            "scheduled_ticks"
+          ]
+        }
+      ],
+      "adjusted": true,
+      "adjustment_reason": "scheduled_ticks=partial, tick_gate=yes, factory_backlog_complete=partial"
+    },
+    {
+      "id": "portability",
+      "name": "Portability",
+      "level": 5,
+      "weight": 0.6,
+      "details": [
+        {
+          "level": 4,
+          "status": "pass",
+          "ratio": 1.0
+        },
+        {
+          "level": 5,
+          "status": "pass",
+          "ratio": 1.0,
+          "failed_mandatory": []
+        }
+      ]
+    }
+  ],
+  "headline_hint": "L5\u2032 (L5 on STG)",
+  "headline_rule_matched": "factory_loop >= 4 AND qa_autonomy >= 5 AND dev_autonomy >= 5 AND deploy_verification >= 5 AND review_gate >= 5 AND prod_human_gated == yes"
+}

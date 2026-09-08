@@ -1,0 +1,148 @@
+meta:
+  project: qa-mysolark-regressiontest
+  assessment: "2026-09-07-baseline"
+  date: "2026-09-07"
+  assessor: maturity-agent
+  factory_manifest: "none (ongoing RQ board; pantheon#557 Ops onboard Done)"
+  ci_product: "solark/qa_mysolark_regressiontest/bitbucket-pipelines.yml"
+  ci_engine: "dev-agent/.github/workflows/code-review.yml"
+  loop_cadence: "300s Kairos; QA oneshot drains"
+  loop_arm_method: "kairos portfolio enabled; human BB Approve often required before merge handoff"
+  prior_headline: "none"
+
+signals:
+  human_writes_tickets:
+    answer: yes
+    citation: "Jira RQ board; humans label impl-dev; Hephaestus jql excludes LRM epic RQ-1579"
+
+  structured_acceptance:
+    answer: yes
+    citation: "RQ-533 dod_check openspec_req REQ-MSA-1701 + scenario SC-MSA-1701; TC-RQ-533 persisted"
+
+  openspec_or_prd:
+    answer: partial
+    citation: "Ticket-level OpenSpec REQ citations exist; Hephaestus project.yaml openspec_enabled false — no strict openspec/ tree gate"
+
+  agents_do_not_invent_scope:
+    answer: partial
+    citation: "impl-dev label + excluded human-required/factory-pause; no Hermes BA_SPEC_READY seat for this slug"
+
+  multiple_roles:
+    answer: yes
+    citation: "Hephaestus + Argus + Cursor CR in pipelines; no BA/UX seats"
+
+  written_role_boundaries:
+    answer: yes
+    citation: "dev project.yaml handoff_status Validate/Testing; app AGENTS.md + .cursor/rules; CR PR-only"
+
+  cr_does_not_pick_tickets:
+    answer: yes
+    citation: "cursor-review step on PRs only; no Jira pickup for CR"
+
+  agent_opens_pr:
+    answer: yes
+    citation: "Hephaestus opens Bitbucket PRs (e.g. RQ-533 PR#444; RQ-534 PR#448)"
+
+  openspec_before_code:
+    answer: partial
+    citation: "openspec_enabled false; some tickets still carry REQ-MSA refs at Argus verify"
+
+  machine_dev_handoff:
+    answer: yes
+    citation: "RQ-533.jsonl handoff_read with PR+pipeline+buildId → Validate/Testing"
+
+  auto_merge:
+    answer: no
+    per_repo:
+      product: no
+      engine: partial
+    citation: "Mandatory human non-author Approve (default_reviewers); RQ-526/RQ-534 SKIP_DEV awaiting Approve — no agent squash-merge when green alone"
+
+  review_agent_exists:
+    answer: yes
+    citation: "bitbucket-pipelines.yml cursor-review step; model composer-2.5"
+
+  blocking_review_ci:
+    answer: yes
+    per_repo:
+      product: yes
+      engine: yes
+    citation: "scripts/code_review/cr_check_review_gate.sh review.md after cursor-review"
+
+  auto_deploy_nonprod:
+    answer: na
+    per_repo:
+      product: na
+      engine: na
+    citation: "Automation forge — merges update test repo only; product env qa.solarkdev.com not redeployed by this pipeline (dev project.yaml deploy N/A)"
+
+  buildid_gate:
+    answer: na
+    per_repo:
+      product: na
+      engine: yes
+    citation: "Argus records buildid_gate=SKIP on RQ-533 (no product deploy from forge merge); not a missing gate on a shipping app"
+
+  qa_agent_or_unattended_tests:
+    answer: yes
+    citation: "Argus project + factory/runs 38+ JSONL; TC suite under qa-agent projects"
+
+  two_pass_or_equivalent:
+    answer: yes
+    citation: "RQ-533 dod_check two_pass=true + verdict_review=pass"
+
+  auto_accept_done:
+    answer: yes
+    citation: "RQ-533 transition to Done after dod_check DONE"
+
+  auto_file_confirmed_bugs:
+    answer: no
+    citation: "No bug_filed events observed in sampled mysolark factory runs for this assessment"
+
+  regression_reopen:
+    answer: no
+    citation: "No auto-reopen trace cited for this slug"
+
+  jira_handoff_comments:
+    answer: yes
+    citation: "handoff_read detail includes PR URL + pipeline + buildId (RQ-533)"
+
+  factory_ledger:
+    answer: yes
+    citation: "qa-agent/projects/qa-mysolark-regressiontest/factory/runs/*.jsonl + _loop.jsonl"
+
+  humans_own_intent:
+    answer: yes
+    citation: "Humans own RQ tickets and BB merge Approves"
+
+  needs_human_policy:
+    answer: yes
+    citation: "excluded_labels human-required/factory-pause/needs-human; merge Approves are intentional human gate"
+
+  prod_human_gated:
+    answer: yes
+    citation: "No PROD path in forge scope; product QA env is external; humans gate BB merges"
+
+  scheduled_ticks:
+    answer: partial
+    citation: "Kairos portfolio enabled interval 300s — ticks often idle/held on human Approve (RQ-534 oneshot NOT DEV_FACTORY_IDLE)"
+
+  tick_gate:
+    answer: yes
+    citation: "Argus dod_check + verdict_review before Done (RQ-533)"
+
+  factory_backlog_complete:
+    answer: partial
+    citation: "Ongoing RQ board (not a closed MANIFEST program); Ops onboard pantheon#557 Done; many tickets still IP/approval-blocked"
+
+  project_template:
+    answer: yes
+    citation: "dev/qa/usage seat projects from _template; Metis scaffold via new_project.sh"
+
+  slug_parameterized_scripts:
+    answer: yes
+    citation: "slug qa-mysolark-regressiontest in Kairos/Theia/ops-config; factory scripts take slug"
+
+  second_product_proof:
+    answer: yes
+    citation: "Shared engines also run LRM, Pantheon, ai-support — mysolark is additional Bitbucket forge"
