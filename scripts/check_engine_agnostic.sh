@@ -42,6 +42,8 @@ while IFS= read -r f; do
     echo "$line" | grep -q 'engine-agnostic' && continue
     echo "$line" | grep -q 'no hits' && continue
     echo "$line" | grep -q 'test_negative_gates.sh' && continue
+    # Shared Themis pack checkout (all factory engines) — not a product leak
+    echo "$line" | grep -q 'repository: mbugaiov/themis-agent' && continue
     echo "engine leak: $line"
     FAIL=1
   done < <(git grep -nEi "$FORBIDDEN" -- "$f" 2>/dev/null || true)
