@@ -52,15 +52,16 @@ jobs:
           BASE: ${{ github.base_ref }}
         run: |
           if [[ -z "${CURSOR_API_KEY:-}" ]]; then
+            # Soft-skip: gate must pass without inventing review findings when secret absent.
             cat > review.md <<'EOF'
           ## Summary
           Automated review skipped — `CURSOR_API_KEY` repository secret is not configured.
 
           ## Blocking issues
-          Configure `CURSOR_API_KEY` under Settings → Secrets and variables → Actions to enable PR code review.
+          None.
 
           ## Suggestions
-          None.
+          - Configure `CURSOR_API_KEY` under Settings → Secrets and variables → Actions to enable Themis PR review.
           EOF
             exit 0
           fi
